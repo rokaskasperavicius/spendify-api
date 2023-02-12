@@ -18,7 +18,7 @@ app.get('/', async (req, res) => {
   // } catch (error) {
   //   console.error(error)
   // }
-  // res.send('Express + TypeScript Server')
+  res.send('Express + TypeScript Server')
 })
 
 app.listen(port, () => {
