@@ -23,8 +23,8 @@ const corsOptions = {
     'http://localhost:3000',
 
     // For production
-    'https://csproject-client.herokuapp.com',
-    'http://csproject-client.herokuapp.com',
+    'https://spendify-client.vercel.app',
+    'https://www.spendify.dk',
   ],
   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }
