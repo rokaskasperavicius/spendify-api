@@ -16,10 +16,7 @@ passwordSchema
   .has()
   .lowercase() // Must have lowercase letters
   .has()
-  .digits(1) // Must have at least 2 digits
-  .has()
-  .not()
-  .spaces() // Should not have spaces
+  .digits(1) // Must have at least 1 digit
 
 export const registerUser = [
   body('firstName').notEmpty(),
@@ -32,11 +29,12 @@ export const registerUser = [
       const isEmailValid = emails.length === 0
 
       if (!isEmailValid) {
-        throw new Error('User already exists')
+        throw new Error('Email has been already taken')
       }
 
       return true
-    }),
+    })
+    .withMessage({ code: 1 }),
   body('password').custom((password) => passwordSchema.validate(password)),
 ]
 

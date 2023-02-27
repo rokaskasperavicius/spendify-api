@@ -29,9 +29,19 @@ const app = express.Router()
 app.get('/institutions', async (req, res) => {
   const { data } = await api.get(`/institutions/?country=${process.env.NORDIGEN_COUNTRY}`)
 
+  const institutions = []
+
+  for (const institution of data) {
+    institutions.push({
+      id: institution.id,
+      bankName: institution.name,
+      bankLogo: institution.logo,
+    })
+  }
+
   res.json({
     success: true,
-    data,
+    data: institutions,
   })
 })
 
@@ -51,14 +61,14 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
 
     next()
   } catch (err) {
-    throw new ServerError(401, 'Unauthorized')
+    throw new ServerError(401)
   }
 }
 
-app.post('/requisition', verifyToken, createNordigenRequisition, async (req: Request, res: Response) => {
+app.post('/url', verifyToken, createNordigenRequisition, async (req: Request, res: Response) => {
   validationResult(req).throw()
 
-  const { institutionId } = req.body
+  const { institutionId, redirect } = req.body
 
   const { data: agreement } = await api.post('/agreements/enduser/', {
     institution_id: institutionId,
@@ -69,14 +79,14 @@ app.post('/requisition', verifyToken, createNordigenRequisition, async (req: Req
 
   const { data } = await api.post('/requisitions/', {
     institution_id: institutionId,
-    redirect: process.env.NORDIGEN_REDIRECT,
+    redirect: redirect,
     agreement: agreement.id,
   })
 
   res.json({
     success: true,
     data: {
-      link: data.link,
+      url: data.link,
     },
   })
 })
@@ -95,37 +105,11 @@ app.get('/accounts/:requisitionId', verifyToken, getNordigenAccounts, async (req
     const { data: balances } = await api.get(`/accounts/${account}/balances/`)
 
     accounts.push({
-      name: details.account.name,
-      iban: details.account.iban,
-      accountId: account,
-      ammount: balances.balances[0].balanceAmount.amount,
-    })
-  }
-
-  res.json({
-    success: true,
-    data: {
       requisitionId,
-      accounts,
-    },
-  })
-})
-
-app.get('/accounts', verifyToken, async (req: Request, res: Response) => {
-  validationResult(req).throw()
-
-  const data = await db('SELECT id, account_id AS "accountId" FROM accounts WHERE user_id = $1', [res.locals.user])
-
-  const accounts = []
-
-  for (const account of data) {
-    const { accountId } = account
-    const { data: balances } = await api.get(`/accounts/${accountId}/balances/`)
-
-    accounts.push({
-      id: account.id,
-      accountId,
-      ammount: balances.balances[0].balanceAmount.amount,
+      accountId: account,
+      accountName: details.account.name,
+      accountIban: details.account.iban,
+      accountBalance: balances.balances[0].balanceAmount.amount,
     })
   }
 
@@ -135,7 +119,42 @@ app.get('/accounts', verifyToken, async (req: Request, res: Response) => {
   })
 })
 
-app.post('/link', verifyToken, linkNordigenAccount, async (req: Request, res: Response) => {
+app.get('/accounts', verifyToken, async (req: Request, res: Response) => {
+  validationResult(req).throw()
+
+  const data = await db(
+    `SELECT
+      id, account_id, requisition_id, account_name, account_iban, bank_name, bank_logo
+      FROM accounts
+      WHERE user_id = $1
+    `,
+    [res.locals.user]
+  )
+
+  const accounts = []
+
+  for (const account of data) {
+    const { data: balances } = await api.get(`/accounts/${account.account_id}/balances/`)
+
+    accounts.push({
+      id: account.id,
+      requisitionId: account.requisition_id,
+      accountId: account.account_id,
+      accountBalance: balances.balances[0].balanceAmount.amount,
+      accountName: account.account_name,
+      accountIban: account.account_iban,
+      bankName: account.bank_name,
+      bankLogo: account.bank_logo,
+    })
+  }
+
+  res.json({
+    success: true,
+    data: accounts,
+  })
+})
+
+app.post('/connect', verifyToken, linkNordigenAccount, async (req: Request, res: Response) => {
   validationResult(req).throw()
 
   const { requisitionId, accountId } = req.body

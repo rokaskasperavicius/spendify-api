@@ -13,10 +13,17 @@ import { ServerError } from 'error'
 
 import { registerUser, loginUser } from '@features/users/schemas'
 
+// Types
+import { ERROR_CODES } from 'types'
+
 const app = express.Router()
 
 app.post('/register', registerUser, async (req: Request, res: Response) => {
-  validationResult(req).throw()
+  try {
+    validationResult(req).throw()
+  } catch (err) {
+    throw new ServerError(400, ERROR_CODES.INVALID_EMAIL, err instanceof Error ? err.message : '')
+  }
 
   const { firstName, lastName, email, password } = req.body
 
@@ -35,7 +42,11 @@ app.post('/register', registerUser, async (req: Request, res: Response) => {
 })
 
 app.post('/login', loginUser, async (req: Request, res: Response) => {
-  validationResult(req).throw()
+  try {
+    validationResult(req).throw()
+  } catch (error) {
+    throw new ServerError(400, ERROR_CODES.WRONG_PASSWORD)
+  }
 
   const { email, password } = req.body
 
@@ -44,7 +55,7 @@ app.post('/login', loginUser, async (req: Request, res: Response) => {
   const isPasswordOk = await bcrypt.compare(password, user.password)
 
   if (!isPasswordOk) {
-    throw new Error('Incorrect email or password')
+    throw new ServerError(400, ERROR_CODES.WRONG_PASSWORD)
   }
 
   const accessToken = jwt.sign({ id: user.id }, process.env.JWT_ACCESS_SECRET_KEY as string, {
@@ -91,7 +102,7 @@ app.post('/refresh-token', async (req: Request, res: Response) => {
       },
     })
   } catch (err) {
-    throw new ServerError(401, 'Unauthorized')
+    throw new ServerError(401)
   }
 })
 
