@@ -10,6 +10,9 @@ import { ServerError } from 'error'
 import nordigenRouter from '@features/nordigen/routes'
 import usersRouter from '@features/users/routes'
 
+// Types
+import { ERROR_CODES } from 'types'
+
 // Setup
 const app = express()
 app.use(express.json())
@@ -36,8 +39,8 @@ app.get('/', async (req, res) => {
   res.send('Express + TypeScript Server')
 })
 
-app.use('/api/nordigen', nordigenRouter)
-app.use('/api/users', usersRouter)
+app.use('/api/link-account', nordigenRouter)
+app.use('/api', usersRouter)
 
 app.use(
   (
@@ -47,16 +50,19 @@ app.use(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     next: NextFunction
   ) => {
-    let status = 400
+    let status = 500
+    let code: ERROR_CODES = -1
+
+    console.log(error)
 
     if (error instanceof ServerError) {
       status = error.status
+      code = error.code || -1
     }
 
-    console.log(error)
     res.status(status).json({
       success: false,
-      message: error.message,
+      code,
     })
   }
 )

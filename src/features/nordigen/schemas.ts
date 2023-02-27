@@ -1,6 +1,6 @@
 import { body, param } from 'express-validator'
 
-export const createNordigenRequisition = [body('institutionId').notEmpty()]
+export const createNordigenRequisition = [body('institutionId').notEmpty(), body('redirect').notEmpty()]
 
 export const getNordigenAccounts = [param('requisitionId').notEmpty()]
 
