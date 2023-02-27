@@ -50,7 +50,7 @@ app.post('/login', loginUser, async (req: Request, res: Response) => {
 
   const { email, password } = req.body
 
-  const user = (await db('SELECT id, password FROM users WHERE email = $1', [email]))[0]
+  const user = (await db('SELECT id, password, first_name, last_name FROM users WHERE email = $1', [email]))[0]
 
   const isPasswordOk = await bcrypt.compare(password, user.password)
 
@@ -71,6 +71,8 @@ app.post('/login', loginUser, async (req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
+      firstName: user.first_name,
+      lastName: user.last_name,
       accessToken,
       refreshToken,
     },
