@@ -46,6 +46,9 @@ import {
 
 const app = express.Router()
 
+const nordigenCurrency = (value: string) => currency(value, { symbol: '', separator: '', decimal: '.' })
+const FINAL_CURRENCY_FORMAT = { decimal: ',', separator: '.' }
+
 app.get('/institutions', async (req: ServerRequest, res: ServerResponse) => {
   const { data: institutions } = await getNordigenInstitutions()
 
@@ -109,7 +112,7 @@ app.get(
         accountId,
         accountName: details.account.name,
         accountIban: details.account.iban,
-        accountBalance: balances.balances[0].balanceAmount.amount,
+        accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FINAL_CURRENCY_FORMAT),
       })
     }
 
@@ -132,7 +135,7 @@ app.get('/', verifyUser, async (req: ServerRequest, res: ServerResponse) => {
       id: account.id,
       requisitionId: account.requisition_id,
       accountId: account.account_id,
-      accountBalance: balances.balances[0].balanceAmount.amount,
+      accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FINAL_CURRENCY_FORMAT),
       accountName: account.account_name,
       accountIban: account.account_iban,
       bankName: account.bank_name,
@@ -206,8 +209,6 @@ app.get(
     let currentBalance = balances.balances[0].balanceAmount.amount
 
     // Map cumulative balance
-    const nordigenCurrency = (value: string) => currency(value, { symbol: '', separator: '', decimal: '.' })
-
     let mappedTransactions = transactions.map((transaction, index) => {
       // Skip first transaction
       if (index !== 0) {
@@ -222,8 +223,8 @@ app.get(
         title: transaction.remittanceInformationUnstructuredArray[0],
         date: transaction.bookingDate,
 
-        amount: nordigenCurrency(transaction.transactionAmount.amount).format({ decimal: ',', separator: '.' }),
-        totalAmount: nordigenCurrency(currentBalance).format({ decimal: ',', separator: '.' }),
+        amount: nordigenCurrency(transaction.transactionAmount.amount).format(FINAL_CURRENCY_FORMAT),
+        totalAmount: nordigenCurrency(currentBalance).format(FINAL_CURRENCY_FORMAT),
         totalAmountInt: nordigenCurrency(currentBalance).value,
       }
     })
