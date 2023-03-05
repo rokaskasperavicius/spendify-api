@@ -242,9 +242,17 @@ app.get(
             const fromDate = startOfDay(new Date(from))
             const endDate = endOfDay(new Date(to))
 
+            console.log('START')
+            console.log(transaction.date)
+            console.log(from)
+            console.log(to)
+            console.log(new Date(from))
+            console.log(new Date(to))
+
             console.log(transactionDate)
             console.log(fromDate)
             console.log(endDate)
+            console.log('END')
 
             return transactionDate >= fromDate && transactionDate <= endDate
           })
