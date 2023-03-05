@@ -18,9 +18,9 @@ for (let i = 0; i < 5000; i++) {
     remittanceInformationUnstructuredArray: [faker.faker.finance.transactionDescription()],
     bookingDate: randomDates[i],
     transactionAmount: {
-      amount: faker.faker.finance.amount(1, 1000),
+      amount: faker.faker.finance.amount(-1000, 1000),
     },
   })
 }
 
-fs.writeFile('mocked.json', JSON.stringify(transactions), () => [])
+fs.writeFile('./src/config/mocked.json', JSON.stringify(transactions), () => [])

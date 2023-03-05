@@ -12,7 +12,7 @@ export const linkAccount = [body('requisitionId').notEmpty(), body('accountId').
 export const getAccountTransactions = [
   param('accountId').notEmpty(),
   query('search').optional(),
-  query('category').optional().isIn(['Food & Groceries', 'Utilites', 'Transfers']),
+  query('category').optional().isIn(['Food & Groceries', 'Utilities', 'Transfers']),
   query('from').optional().isISO8601(),
   query('to').optional().isISO8601(),
 ]

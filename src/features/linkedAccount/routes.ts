@@ -134,7 +134,7 @@ app.get(
             accountId: uuid(),
             accountName: 'Fake Account',
             accountIban: 'DK7050516477944871',
-            accountBalance: '500.000,00',
+            accountBalance: '20.000,00',
           },
         ],
       })
@@ -184,7 +184,7 @@ app.get('/', verifyUser, async (req: ServerRequest, res: ServerResponse) => {
             id: account.id,
             requisitionId: account.requisition_id,
             accountId: account.account_id,
-            accountBalance: '500.000,00',
+            accountBalance: '20.000,00',
             accountName: account.account_name,
             accountIban: account.account_iban,
             bankName: account.bank_name,
@@ -298,7 +298,7 @@ app.get(
       },
     }
 
-    const mockedCurrentBalance = '500000.00'
+    const mockedCurrentBalance = '20000.00'
     const mokedBalanceObject = {
       data: {
         balances: [
