@@ -1,17 +1,13 @@
-import express, { Request, Response, ErrorRequestHandler, NextFunction } from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import 'dotenv/config'
 
-import bodyParser from 'body-parser'
-
-import { ServerError } from 'error'
-
 // Features
-import nordigenRouter from '@features/nordigen/routes'
+import linkedAccountRouter from '@features/linkedAccount/routes'
 import usersRouter from '@features/users/routes'
 
 // Types
-import { ERROR_CODES } from 'types'
+import { ERROR_CODES, ServerError } from '@types'
 
 // Setup
 const app = express()
@@ -36,10 +32,10 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 app.get('/', async (req, res) => {
-  res.send('Express + TypeScript Server')
+  res.send('Spendify API')
 })
 
-app.use('/api/link-account', nordigenRouter)
+app.use('/api/linked-account', linkedAccountRouter)
 app.use('/api', usersRouter)
 
 app.use(
@@ -53,8 +49,6 @@ app.use(
     let status = 500
     let code: ERROR_CODES = -1
 
-    console.log(error)
-
     if (error instanceof ServerError) {
       status = error.status
       code = error.code || -1
@@ -62,6 +56,7 @@ app.use(
 
     res.status(status).json({
       success: false,
+      message: error.message,
       code,
     })
   }

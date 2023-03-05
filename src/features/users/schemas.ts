@@ -21,34 +21,8 @@ passwordSchema
 export const registerUser = [
   body('firstName').notEmpty(),
   body('lastName').notEmpty(),
-  body('email')
-    .isEmail()
-    .custom(async (email) => {
-      const emails = await db('SELECT email FROM users WHERE email = $1', [email])
-
-      const isEmailValid = emails.length === 0
-
-      if (!isEmailValid) {
-        throw new Error('Email has been already taken')
-      }
-
-      return true
-    })
-    .withMessage({ code: 1 }),
+  body('email').isEmail(),
   body('password').custom((password) => passwordSchema.validate(password)),
 ]
 
-export const loginUser = [
-  body('email')
-    .notEmpty()
-    .custom(async (email) => {
-      const emails = await db('SELECT email FROM users WHERE email = $1', [email])
-
-      if (!emails.length) {
-        throw new Error('User does not exist')
-      }
-
-      return true
-    }),
-  body('password').notEmpty(),
-]
+export const loginUser = [body('email').notEmpty(), body('password').notEmpty()]

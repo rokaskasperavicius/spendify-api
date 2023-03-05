@@ -1,18 +1,18 @@
-import { Pool } from 'pg'
+import { Pool, QueryResult } from 'pg'
 
 const pool = new Pool()
 
-export const db = async (query: string, values?: Array<string | undefined>) => {
+interface ServerQueryResult<T> extends QueryResult {
+  rows: T[]
+}
+
+export const db = async <T>(query: string, values?: Array<string | number>) => {
   const client = await pool.connect()
 
   try {
-    return await client.query(query, values).then((result) => result.rows)
-  } catch (err) {
-    if (err instanceof Error) {
-      // err.status = 404
-    }
+    const results = await client.query<ServerQueryResult<T>>(query, values)
 
-    throw err
+    return results.rows as T[]
   } finally {
     client.release()
   }

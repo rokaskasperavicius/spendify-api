@@ -2,30 +2,45 @@ import 'express-async-errors'
 
 import { validationResult } from 'express-validator'
 
-import express, { Request, Response } from 'express'
+import express from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
 // Services
 import { db } from '@services/db'
 
-import { ServerError } from 'error'
-
-import { registerUser, loginUser } from '@features/users/schemas'
+// Helpers
+import { getUser } from '@features/users/utils/getUser'
+import { getUserWithRefreshToken } from '@features/users/utils/getUserWithRefreshToken'
 
 // Types
-import { ERROR_CODES } from 'types'
+import { ServerError, ERROR_CODES, ServerRequest, ServerResponse } from '@types'
+import { RegisterBody, LoginBody } from '@features/users/routes.types'
+
+// Schemas
+import { registerUser, loginUser } from '@features/users/schemas'
+
+// Constants
+import {
+  JWT_ACCESS_SECRET_KEY,
+  JWT_REFRESH_SECRET_KEY,
+  JWT_ACCESS_EXPIRATION,
+  JWT_REFRESH_EXPIRATION,
+} from '@constants'
 
 const app = express.Router()
 
-app.post('/register', registerUser, async (req: Request, res: Response) => {
-  try {
-    validationResult(req).throw()
-  } catch (err) {
-    throw new ServerError(400, ERROR_CODES.INVALID_EMAIL, err instanceof Error ? err.message : '')
-  }
+app.post('/register', registerUser, async (req: ServerRequest<RegisterBody>, res: ServerResponse) => {
+  validationResult(req).throw()
 
   const { firstName, lastName, email, password } = req.body
+
+  const users = await getUser({ email })
+  const user = users[0]
+
+  if (user) {
+    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+  }
 
   const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -41,61 +56,72 @@ app.post('/register', registerUser, async (req: Request, res: Response) => {
   })
 })
 
-app.post('/login', loginUser, async (req: Request, res: Response) => {
-  try {
-    validationResult(req).throw()
-  } catch (error) {
-    throw new ServerError(400, ERROR_CODES.WRONG_PASSWORD)
-  }
+app.post('/login', loginUser, async (req: ServerRequest<LoginBody>, res: ServerResponse) => {
+  validationResult(req).throw()
 
   const { email, password } = req.body
 
-  const user = (await db('SELECT id, password, first_name, last_name FROM users WHERE email = $1', [email]))[0]
+  const users = await getUser({ email })
+  const user = users[0]
 
-  const isPasswordOk = await bcrypt.compare(password, user.password)
-
-  if (!isPasswordOk) {
-    throw new ServerError(400, ERROR_CODES.WRONG_PASSWORD)
+  if (!user) {
+    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
-  const accessToken = jwt.sign({ id: user.id }, process.env.JWT_ACCESS_SECRET_KEY as string, {
-    expiresIn: '15m', // 15 minutes,
+  const userPassword = user.password
+  const userId = user.id
+  const firstName = user.first_name
+  const lastName = user.last_name
+
+  const isPasswordOk = userPassword ? await bcrypt.compare(password, userPassword) : false
+
+  if (!isPasswordOk) {
+    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+  }
+
+  const accessToken = jwt.sign({ id: userId }, JWT_ACCESS_SECRET_KEY, {
+    expiresIn: JWT_ACCESS_EXPIRATION,
   })
 
-  const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET_KEY as string, {
-    expiresIn: '5d', // 5 days,
+  const refreshToken = jwt.sign({ id: userId }, JWT_REFRESH_SECRET_KEY, {
+    expiresIn: JWT_REFRESH_EXPIRATION,
   })
 
-  await db('UPDATE users SET access_token = $2, refresh_token = $3 WHERE id = $1', [user.id, accessToken, refreshToken])
+  await db('UPDATE users SET access_token = $2, refresh_token = $3 WHERE id = $1', [userId, accessToken, refreshToken])
 
   res.json({
     success: true,
     data: {
-      firstName: user.first_name,
-      lastName: user.last_name,
+      firstName,
+      lastName,
       accessToken,
       refreshToken,
     },
   })
 })
 
-app.post('/refresh-token', async (req: Request, res: Response) => {
+app.post('/refresh-token', async (req: ServerRequest, res: ServerResponse) => {
   const refreshToken = req.headers.authorization?.split(' ')[1]
 
-  const user = await db('SELECT id FROM users WHERE refresh_token = $1', [refreshToken])
+  if (!refreshToken) {
+    throw new ServerError(401)
+  }
 
-  if (user.length === 0 || !refreshToken) {
+  const users = await getUserWithRefreshToken({ refreshToken })
+  const user = users[0]
+
+  if (!user) {
     throw new ServerError(401)
   }
 
   try {
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY as string)
+    jwt.verify(refreshToken, JWT_REFRESH_SECRET_KEY)
 
-    const accessToken = jwt.sign({ id: user[0].id }, process.env.JWT_ACCESS_SECRET_KEY as string, {
-      expiresIn: '15m', // 15 minutes,
+    const accessToken = jwt.sign({ id: user.id }, JWT_ACCESS_SECRET_KEY, {
+      expiresIn: JWT_ACCESS_EXPIRATION,
     })
 
-    await db('UPDATE users SET access_token = $2 WHERE id = $1', [user[0].id, accessToken])
+    await db('UPDATE users SET access_token = $2 WHERE id = $1', [user.id, accessToken])
 
     res.json({
       success: true,
