@@ -242,6 +242,10 @@ app.get(
             const fromDate = startOfDay(new Date(from))
             const endDate = endOfDay(new Date(to))
 
+            console.log(transactionDate)
+            console.log(fromDate)
+            console.log(endDate)
+
             return transactionDate >= fromDate && transactionDate <= endDate
           })
         : mappedTransactions
