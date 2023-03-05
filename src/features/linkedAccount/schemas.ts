@@ -1,6 +1,9 @@
 import { body, param, query } from 'express-validator'
 
-export const createRequisition = [body('institutionId').notEmpty(), body('redirect').notEmpty().isURL()]
+export const createRequisition = [
+  body('institutionId').notEmpty(),
+  body('redirect').notEmpty().isURL({ require_tld: false }),
+]
 
 export const getAvailableAccounts = [param('requisitionId').notEmpty()]
 
