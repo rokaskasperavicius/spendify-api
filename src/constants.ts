@@ -9,3 +9,5 @@ export const NORDIGEN_BASE_URL = process.env.NORDIGEN_BASE_URL as string
 export const NORDIGEN_SECRET_ID = process.env.NORDIGEN_SECRET_ID as string
 export const NORDIGEN_SECRET_KEY = process.env.NORDIGEN_SECRET_KEY as string
 export const NORDIGEN_COUNTRY = process.env.NORDIGEN_COUNTRY as string
+
+export const MOCKED_USER_ID = 16
