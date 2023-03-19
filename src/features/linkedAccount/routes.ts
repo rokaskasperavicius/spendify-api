@@ -8,6 +8,7 @@ import fuzzysort from 'fuzzysort'
 import { BayesClassifier } from 'natural'
 import { startOfDay, endOfDay } from 'date-fns'
 import { v4 as uuid } from 'uuid'
+import { faker } from '@faker-js/faker'
 
 // Helpers
 import { db } from '@services/db'
@@ -171,44 +172,48 @@ app.get(
 app.get('/', verifyUser, async (req: ServerRequest, res: ServerResponse) => {
   const data = await getLinkedAccounts({ userId: res.locals.userId })
 
-  const accounts = []
+  // MOCKED
+  if (res.locals.userId === MOCKED_USER_ID) {
+    const mockedAccounts = []
 
-  for (const account of data) {
-    // MOCKED
-    if (res.locals.userId === MOCKED_USER_ID) {
-      res.json({
-        success: true,
-
-        data: [
-          {
-            id: account.id,
-            requisitionId: account.requisition_id,
-            accountId: account.account_id,
-            accountBalance: '20.000,00',
-            accountName: account.account_name,
-            accountIban: account.account_iban,
-            bankName: account.bank_name,
-            bankLogo: account.bank_logo,
-          },
-        ],
-      })
-
-      return
-      // MOCKED
-    } else {
-      const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
-
-      accounts.push({
+    for (const account of data) {
+      mockedAccounts.push({
         id: account.id,
         requisitionId: account.requisition_id,
         accountId: account.account_id,
-        accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FINAL_CURRENCY_FORMAT),
+        accountBalance: '20.000,00',
         accountName: account.account_name,
         accountIban: account.account_iban,
         bankName: account.bank_name,
         bankLogo: account.bank_logo,
       })
     }
+
+    res.json({
+      success: true,
+
+      data: mockedAccounts,
+    })
+
+    return
+  }
+  // MOCKED
+
+  const accounts = []
+
+  for (const account of data) {
+    const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
+
+    accounts.push({
+      id: account.id,
+      requisitionId: account.requisition_id,
+      accountId: account.account_id,
+      accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FINAL_CURRENCY_FORMAT),
+      accountName: account.account_name,
+      accountIban: account.account_iban,
+      bankName: account.bank_name,
+      bankLogo: account.bank_logo,
+    })
   }
 
   res.json({
@@ -218,9 +223,12 @@ app.get('/', verifyUser, async (req: ServerRequest, res: ServerResponse) => {
 })
 
 app.post('/connect', verifyUser, linkAccount, async (req: ServerRequest<ConnectLinkedAccount>, res: ServerResponse) => {
+  console.log(faker)
   validationResult(req).throw()
 
   const { requisitionId, accountId } = req.body
+
+  console.log(faker.finance.accountName())
 
   // MOCKED
 
@@ -234,8 +242,8 @@ app.post('/connect', verifyUser, linkAccount, async (req: ServerRequest<ConnectL
         res.locals.userId,
         requisitionId,
         accountId,
-        'Fake Account',
-        'DK7050516477944871',
+        faker.finance.accountName(),
+        faker.finance.iban(true, 'DK'),
         'Fake Bank',
         'https://w7.pngwing.com/pngs/42/185/png-transparent-fake-news-bank-account-money-balance-others-text-trademark-logo.png',
       ]
