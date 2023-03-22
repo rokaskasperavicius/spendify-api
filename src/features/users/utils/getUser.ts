@@ -10,14 +10,13 @@ type UserProps = {
   password: string
   first_name: string
   last_name: string
-  access_token: string
   refresh_token: string
 }
 
 export const getUser = ({ email }: Props) => {
   return db<UserProps>(
     `SELECT
-      id, password, first_name, last_name, access_token, refresh_token 
+      id, password, first_name, last_name, refresh_token 
       FROM users
       WHERE email = $1
     `,

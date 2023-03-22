@@ -5,6 +5,7 @@ import { validationResult } from 'express-validator'
 import express from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { v4 as uuid } from 'uuid'
 
 // Services
 import { db } from '@services/db'
@@ -21,12 +22,7 @@ import { RegisterBody, LoginBody } from '@features/users/routes.types'
 import { registerUser, loginUser } from '@features/users/schemas'
 
 // Constants
-import {
-  JWT_ACCESS_SECRET_KEY,
-  JWT_REFRESH_SECRET_KEY,
-  JWT_ACCESS_EXPIRATION,
-  JWT_REFRESH_EXPIRATION,
-} from '@constants'
+import { JWT_ACCESS_SECRET_KEY, JWT_ACCESS_EXPIRATION } from '@constants'
 
 const app = express.Router()
 
@@ -83,26 +79,29 @@ app.post('/login', loginUser, async (req: ServerRequest<LoginBody>, res: ServerR
     expiresIn: JWT_ACCESS_EXPIRATION,
   })
 
-  const refreshToken = jwt.sign({ id: userId }, JWT_REFRESH_SECRET_KEY, {
-    expiresIn: JWT_REFRESH_EXPIRATION,
-  })
+  const refreshToken = uuid()
 
-  await db('UPDATE users SET access_token = $2, refresh_token = $3 WHERE id = $1', [userId, accessToken, refreshToken])
+  await db('UPDATE users SET refresh_token = $2 WHERE id = $1', [userId, refreshToken])
 
   res.json({
     success: true,
     data: {
-      firstName,
-      lastName,
-      accessToken,
-      refreshToken,
+      user: {
+        firstName,
+        lastName,
+      },
+
+      auth: {
+        accessToken,
+        refreshToken,
+      },
     },
   })
 })
 
 app.post('/refresh-token', async (req: ServerRequest, res: ServerResponse) => {
   const refreshToken = req.headers.authorization?.split(' ')[1]
-
+  console.log({ refreshToken })
   if (!refreshToken) {
     throw new ServerError(401)
   }
@@ -114,24 +113,21 @@ app.post('/refresh-token', async (req: ServerRequest, res: ServerResponse) => {
     throw new ServerError(401)
   }
 
-  try {
-    jwt.verify(refreshToken, JWT_REFRESH_SECRET_KEY)
+  const accessToken = jwt.sign({ id: user.id }, JWT_ACCESS_SECRET_KEY, {
+    expiresIn: JWT_ACCESS_EXPIRATION,
+  })
 
-    const accessToken = jwt.sign({ id: user.id }, JWT_ACCESS_SECRET_KEY, {
-      expiresIn: JWT_ACCESS_EXPIRATION,
-    })
+  const newRefreshToken = uuid()
 
-    await db('UPDATE users SET access_token = $2 WHERE id = $1', [user.id, accessToken])
+  await db('UPDATE users SET refresh_token = $2 WHERE id = $1', [user.id, newRefreshToken])
 
-    res.json({
-      success: true,
-      data: {
-        accessToken,
-      },
-    })
-  } catch (err) {
-    throw new ServerError(401)
-  }
+  res.json({
+    success: true,
+    data: {
+      accessToken,
+      refreshToken: newRefreshToken,
+    },
+  })
 })
 
 export default app

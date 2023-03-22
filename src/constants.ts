@@ -1,8 +1,6 @@
 // JWT
 export const JWT_ACCESS_SECRET_KEY = process.env.JWT_ACCESS_SECRET_KEY as string
-export const JWT_REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY as string
-export const JWT_ACCESS_EXPIRATION = '15m'
-export const JWT_REFRESH_EXPIRATION = '5d'
+export const JWT_ACCESS_EXPIRATION = '5m'
 
 // Nordigen
 export const NORDIGEN_BASE_URL = process.env.NORDIGEN_BASE_URL as string

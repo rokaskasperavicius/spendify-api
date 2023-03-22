@@ -8,6 +8,7 @@ import { getNordigenToken } from '@features/nordigen/utils/getNordigenToken'
 
 // Constants
 import { NORDIGEN_BASE_URL } from '@constants'
+import nordigenAccess from '@config/nordigenAccess'
 
 const nordigenApi = axios.create({
   baseURL: NORDIGEN_BASE_URL,
@@ -50,7 +51,12 @@ nordigenApi.interceptors.response.use(
     if (response?.status === 401) {
       const { data } = await createNordigenToken()
 
-      await db(`UPDATE nordigen SET access_token = $1`, [data.access])
+      console.log('NORDIGEN: ', data)
+
+      nordigenAccess.setAccessToken(data.access)
+      nordigenAccess.setRefreshToken(data.refresh)
+
+      // await db(`UPDATE nordigen SET access_token = $1`, [data.access])
 
       return nordigenApi(config)
     }
