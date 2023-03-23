@@ -1,22 +1,22 @@
-export type CreateRequisition = {
+export type CreateAccountRequisitionBody = {
   institutionId: string
   redirect: string
 }
 
-export type GetAvailableAccounts = {
+export type GetAvailableAccountsParams = {
   requisitionId: string
 }
 
-export type ConnectLinkedAccount = {
+export type CreateAccountBody = {
   requisitionId: string
   accountId: string
 }
 
-export type LinkedAccountTransactionParams = {
+export type GetAccountTransactionsParams = {
   accountId: string
 }
 
-export type LinkedAccountTransactionQuery = {
+export type GetAccountTransactionsQuery = {
   search?: string
   category?: 'Food & Groceries' | 'Utilities' | 'Transfers'
   from?: string

@@ -1,8 +1,14 @@
+/*
+|--------------------------------------------------------------------------
+| Auth Validators
+|--------------------------------------------------------------------------
+|
+| Here you define all of the validators functions for the auth endpoint
+|
+*/
+
 import { body } from 'express-validator'
 import passwordValidator from 'password-validator'
-
-// Services
-import { db } from '@services/db'
 
 const passwordSchema = new passwordValidator()
 
@@ -18,11 +24,11 @@ passwordSchema
   .has()
   .digits(1) // Must have at least 1 digit
 
-export const registerUser = [
+export const validateRegisterUser = [
   body('firstName').notEmpty(),
   body('lastName').notEmpty(),
   body('email').isEmail(),
   body('password').custom((password) => passwordSchema.validate(password)),
 ]
 
-export const loginUser = [body('email').notEmpty(), body('password').notEmpty()]
+export const validateLoginUser = [body('email').notEmpty(), body('password').notEmpty()]

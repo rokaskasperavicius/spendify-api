@@ -2,7 +2,10 @@ import { NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
 // Types
-import { ServerError, ServerRequest, ServerResponse } from '@types'
+import { ServerError, ServerRequest, ServerResponse } from '@global/types'
+
+// Constants
+import { JWT_ACCESS_SECRET_KEY } from '@global/constants'
 
 export const verifyUser = async (req: ServerRequest, res: ServerResponse, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1]
@@ -12,8 +15,8 @@ export const verifyUser = async (req: ServerRequest, res: ServerResponse, next: 
   }
 
   try {
-    const tokenInfo = jwt.verify(token, process.env.JWT_ACCESS_SECRET_KEY as string) as jwt.JwtPayload
-    console.log({ tokenInfo })
+    const tokenInfo = jwt.verify(token, JWT_ACCESS_SECRET_KEY) as jwt.JwtPayload
+
     res.locals.userId = tokenInfo.id
 
     next()

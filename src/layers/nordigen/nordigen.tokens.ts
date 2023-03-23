@@ -1,4 +1,4 @@
-class NordigenAccess {
+class NordigenTokens {
   accessToken: string
   refreshToken: string
 
@@ -24,4 +24,4 @@ class NordigenAccess {
   }
 }
 
-export default new NordigenAccess('', '')
+export default new NordigenTokens('', '')
