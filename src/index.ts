@@ -2,12 +2,11 @@ import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import 'dotenv/config'
 
-// Features
-import linkedAccountRouter from '@features/linkedAccount/routes'
-import usersRouter from '@features/users/routes'
+// Routes
+import apiRoutes from '@layers/api'
 
 // Types
-import { ERROR_CODES, ServerError } from '@types'
+import { ERROR_CODES, ServerError } from '@global/types'
 
 // Setup
 const app = express()
@@ -35,8 +34,7 @@ app.get('/', async (req, res) => {
   res.send('Spendify API')
 })
 
-app.use('/api/linked-account', linkedAccountRouter)
-app.use('/api', usersRouter)
+app.use('/api', apiRoutes)
 
 app.use(
   (
@@ -63,5 +61,5 @@ app.use(
 )
 
 app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`)
+  console.log(`⚡️ [server]: Server is running at http://localhost:${port}`)
 })
