@@ -15,20 +15,21 @@ app.use(express.json())
 const port = process.env.PORT || 8080
 
 // Allowed urls for accessing our API
-const corsOptions = {
-  origin: [
-    // For development
-    'http://localhost:3000',
+// const corsOptions = {
+//   origin: [
+//     '*',
+//     // For development
+//     'http://localhost:3000',
 
-    // For production
-    'https://spendify-client.vercel.app',
-    'https://www.spendify.dk',
-  ],
-  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
-}
+//     // For production
+//     'https://spendify-client.vercel.app',
+//     'https://www.spendify.dk',
+//   ],
+//   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+// }
 
 // Setup CORS
-app.use(cors(corsOptions))
+app.use(cors({ origin: true }))
 
 app.get('/', async (req, res) => {
   res.send('Spendify API')
@@ -44,6 +45,7 @@ app.use(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     next: NextFunction
   ) => {
+    console.log(error)
     let status = 500
     let code: ERROR_CODES = -1
 

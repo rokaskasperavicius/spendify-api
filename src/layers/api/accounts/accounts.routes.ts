@@ -9,6 +9,8 @@ import {
   getAccountInstitutions,
   getAccountTransactions,
   getAvailableAccounts,
+  deleteAccountHandler,
+  getAccountTransactionsGroupedHandler,
 } from '@layers/api/accounts/accounts.handlers'
 
 // Helpers
@@ -20,6 +22,8 @@ import {
   validateGetAvailableAccounts,
   validateLinkAccount,
   validateGetAccountTransactions,
+  validateDeleteAccount,
+  validateGetAccountTransactionsGrouped,
 } from '@layers/api/accounts/accounts.validators'
 
 const app = express.Router()
@@ -34,6 +38,15 @@ app.get('/', verifyUser, getAccounts)
 
 app.post('/', verifyUser, validateLinkAccount, createAccount)
 
-app.get('/transactions/:accountId', verifyUser, validateGetAccountTransactions, getAccountTransactions)
+app.delete('/', verifyUser, validateDeleteAccount, deleteAccountHandler)
+
+app.post('/transactions', verifyUser, validateGetAccountTransactions, getAccountTransactions)
+
+app.get(
+  '/:accountId/transactions/grouped',
+  verifyUser,
+  validateGetAccountTransactionsGrouped,
+  getAccountTransactionsGroupedHandler
+)
 
 export default app

@@ -1,4 +1,4 @@
-import { body, param, query } from 'express-validator'
+import { body, param } from 'express-validator'
 
 export const validateCreateAccountRequisition = [
   body('institutionId').notEmpty(),
@@ -9,10 +9,17 @@ export const validateGetAvailableAccounts = [param('requisitionId').notEmpty()]
 
 export const validateLinkAccount = [body('requisitionId').notEmpty(), body('accountId').notEmpty()]
 
+export const validateDeleteAccount = [body('accountId').notEmpty()]
+
 export const validateGetAccountTransactions = [
-  param('accountId').notEmpty(),
-  query('search').optional(),
-  query('category').optional().isIn(['Food & Groceries', 'Utilities', 'Transfers']),
-  query('from').optional().isISO8601(),
-  query('to').optional().isISO8601(),
+  body('accountId').notEmpty(),
+  body('search').optional(),
+  body('category').optional().isIn(['Food & Groceries', 'Utilities', 'Transfers']),
+
+  body('intervals').notEmpty(),
+  body('intervals.*.id').isString(),
+  body('intervals.*.from').isInt(),
+  body('intervals.*.to').isInt(),
 ]
+
+export const validateGetAccountTransactionsGrouped = [param('accountId').notEmpty()]

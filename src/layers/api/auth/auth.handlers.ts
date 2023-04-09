@@ -12,17 +12,25 @@ import { v4 as uuid } from 'uuid'
 import { validationResult } from 'express-validator'
 
 // Helpers
-import { getUserWithEmail, getUserWithRefreshToken, createUser, updateUserRefreshToken } from '@layers/database'
+import {
+  getUserWithEmail,
+  getUserWithRefreshToken,
+  createUser,
+  updateUserRefreshToken,
+  getUserWithId,
+  patchUserInfo,
+  patchUserPassword,
+} from '@layers/database'
 import { createAccessToken } from '@layers/api/auth/auth.utils'
 
 // Types
 import { ServerError, ERROR_CODES, ServerRequest, ServerResponse } from '@global/types'
-import { RegisterUserBody, LoginUserBody } from '@layers/api/auth/auth.types'
+import { RegisterUserBody, LoginUserBody, PatchUserInfoBody, PatchUserPasswordBody } from '@layers/api/auth/auth.types'
 
 export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: ServerResponse) => {
   validationResult(req).throw()
 
-  const { firstName, lastName, email, password } = req.body
+  const { name, email, password } = req.body
 
   const users = await getUserWithEmail({ email })
   const user = users[0]
@@ -33,7 +41,7 @@ export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: Se
 
   const hashedPassword = await bcrypt.hash(password, 12)
 
-  await createUser({ firstName, lastName, email, password: hashedPassword })
+  await createUser({ name, email, password: hashedPassword })
 
   res.json({
     success: true,
@@ -54,8 +62,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
 
   const userPassword = user.password
   const userId = user.id
-  const firstName = user.first_name
-  const lastName = user.last_name
+  const name = user.name
 
   const isPasswordOk = userPassword ? await bcrypt.compare(password, userPassword) : false
 
@@ -73,8 +80,8 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
     success: true,
     data: {
       user: {
-        firstName,
-        lastName,
+        name,
+        email,
       },
 
       auth: {
@@ -112,5 +119,54 @@ export const refreshUserToken = async (req: ServerRequest, res: ServerResponse) 
       accessToken,
       refreshToken: newRefreshToken,
     },
+  })
+}
+
+export const patchUserInfoHandler = async (req: ServerRequest<PatchUserInfoBody>, res: ServerResponse) => {
+  validationResult(req).throw()
+
+  const userId = res.locals.userId
+  const { name, email } = req.body
+
+  const users = await getUserWithEmail({ email })
+  const user = users[0]
+
+  // User with that email already exists
+  if (user && userId !== user.id) {
+    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+  }
+
+  await patchUserInfo({ userId, name, email })
+
+  res.json({
+    success: true,
+    data: {
+      name,
+      email,
+    },
+  })
+}
+
+export const patchUserPasswordHandler = async (req: ServerRequest<PatchUserPasswordBody>, res: ServerResponse) => {
+  validationResult(req).throw()
+
+  const userId = res.locals.userId
+  const { oldPassword, newPassword } = req.body
+
+  const users = await getUserWithId({ id: userId })
+  const user = users[0]
+
+  const isPasswordOk = await bcrypt.compare(oldPassword, user.password)
+
+  if (!isPasswordOk) {
+    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 12)
+
+  await patchUserPassword({ userId, password: hashedPassword })
+
+  res.json({
+    success: true,
   })
 }

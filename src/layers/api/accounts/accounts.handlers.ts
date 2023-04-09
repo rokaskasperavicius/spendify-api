@@ -2,9 +2,10 @@ import { validationResult } from 'express-validator'
 import currency from 'currency.js'
 import fuzzysort from 'fuzzysort'
 import { BayesClassifier } from 'natural'
-import { startOfDay, endOfDay } from 'date-fns'
+import { startOfDay, endOfDay, format } from 'date-fns'
 import { v4 as uuid } from 'uuid'
 import { faker } from '@faker-js/faker'
+import groupBy from 'lodash/groupBy'
 
 // Helpers
 import {
@@ -19,16 +20,25 @@ import {
   createNordigenRequisition,
 } from '@layers/nordigen/nordigen.utils'
 
-import { getUserAccountWithAccountId, getUserAccounts, createUserAccount } from '@layers/database/database.utils'
+import {
+  getUserAccountWithAccountId,
+  getUserAccounts,
+  createUserAccount,
+  deleteUserAccount,
+} from '@layers/database/database.utils'
 
 // Types
 import { ServerError, ServerRequest, ServerResponse } from '@global/types'
 import {
   CreateAccountRequisitionBody,
   GetAvailableAccountsParams,
+  GetAccountTransactionsBody,
   GetAccountTransactionsParams,
   GetAccountTransactionsQuery,
+  GetAccountTransactionsGroupedParams,
   CreateAccountBody,
+  DeleteAccountBody,
+  ReducedGroupedTransactions,
 } from '@layers/api/accounts/accounts.types'
 
 // Constants
@@ -249,14 +259,12 @@ export const createAccount = async (req: ServerRequest<CreateAccountBody>, res: 
   })
 }
 
-export const getAccountTransactions = async (
-  req: ServerRequest<object, GetAccountTransactionsParams, GetAccountTransactionsQuery>,
-  res: ServerResponse
-) => {
+export const getAccountTransactions = async (req: ServerRequest<GetAccountTransactionsBody>, res: ServerResponse) => {
   validationResult(req).throw()
 
-  const { accountId } = req.params
-  const { search, category, from, to } = req.query
+  // const { accountId } = req.params
+  // const { search, category } = req.query
+  const { intervals, accountId, category, search } = req.body
 
   // MOCKED
   const isMock = res.locals.userId === MOCKED_USER_ID
@@ -315,9 +323,10 @@ export const getAccountTransactions = async (
       id: transaction.transactionId,
       weight: index,
       title: transaction.remittanceInformationUnstructuredArray[0],
-      date: new Date(transaction.bookingDate),
+      date: new Date(transaction.bookingDate).getTime(),
 
       amount: nordigenCurrency(transaction.transactionAmount.amount).format(FORMATTED_CURRENCY),
+      amountInt: nordigenCurrency(transaction.transactionAmount.amount).value,
       totalAmount: nordigenCurrency(currentBalance).format(FORMATTED_CURRENCY),
       totalAmountInt: nordigenCurrency(currentBalance).value,
     }
@@ -328,36 +337,162 @@ export const getAccountTransactions = async (
     ? fuzzysort.go(search, mappedTransactions, { key: 'title', threshold: -400 }).map((search) => search.obj)
     : mappedTransactions
 
-  // Apply interval filtering
-  mappedTransactions =
-    from && to
-      ? mappedTransactions.filter((transaction) => {
-          const transactionDate = new Date(transaction.date)
-          const fromDate = startOfDay(new Date(from))
-          const endDate = endOfDay(new Date(to))
+  const intervalizedTransactions: { id: string; transactions: Array<object> }[] = []
 
-          return transactionDate >= fromDate && transactionDate <= endDate
-        })
-      : mappedTransactions
+  for (const interval of intervals) {
+    const intervalizedTransaction = mappedTransactions.filter((transaction) => {
+      const transactionDate = transaction.date
+      const fromDate = startOfDay(new Date(interval.from)).getTime()
+      const endDate = endOfDay(new Date(interval.to)).getTime()
 
-  // Apply categorization
-  BayesClassifier.load('./src/config/model.json', null, (err, classifier) => {
-    const categorizedTransactions = []
-
-    for (const transaction of mappedTransactions) {
-      const classifiedCategory = classifier.getClassifications(transaction.title)[0].label
-
-      if (!category || category === classifiedCategory) {
-        categorizedTransactions.push({
-          ...transaction,
-          category: classifiedCategory,
-        })
-      }
-    }
-
-    res.json({
-      success: true,
-      data: categorizedTransactions.sort((prev, next) => prev.weight - next.weight),
+      return transactionDate >= fromDate && transactionDate <= endDate
     })
+
+    intervalizedTransactions.push({
+      id: interval.id,
+      transactions: intervalizedTransaction.sort((prev, next) => prev.weight - next.weight),
+    })
+
+    // BayesClassifier.load('./src/config/model.json', null, (err, classifier) => {
+    //   const categorizedTransactions = []
+
+    //   for (const transaction of intervalizedTransaction) {
+    //     const classifiedCategory = classifier.getClassifications(transaction.title)[0].label
+
+    //     if (!category || category === classifiedCategory) {
+    //       categorizedTransactions.push({
+    //         ...transaction,
+    //         category: classifiedCategory,
+    //       })
+    //     }
+    //   }
+
+    //   intervalizedTransactions.push({ hi: 5 } as any)
+
+    //   intervalizedTransactions.push({
+    //     id: interval.id,
+    //     transactions: categorizedTransactions.sort((prev, next) => prev.weight - next.weight),
+    //   })
+    // })
+  }
+
+  // // Apply interval filtering
+  // mappedTransactions =
+  //   from && to
+  //     ? mappedTransactions.filter((transaction) => {
+  //         const transactionDate = new Date(transaction.date)
+  //         const fromDate = startOfDay(new Date(from))
+  //         const endDate = endOfDay(new Date(to))
+
+  //         return transactionDate >= fromDate && transactionDate <= endDate
+  //       })
+  //     : mappedTransactions
+
+  // // Apply categorization
+  // BayesClassifier.load('./src/config/model.json', null, (err, classifier) => {
+  //   const categorizedTransactions = []
+
+  //   for (const transaction of mappedTransactions) {
+  //     const classifiedCategory = classifier.getClassifications(transaction.title)[0].label
+
+  //     if (!category || category === classifiedCategory) {
+  //       categorizedTransactions.push({
+  //         ...transaction,
+  //         category: classifiedCategory,
+  //       })
+  //     }
+  //   }
+
+  res.json({
+    success: true,
+    data: intervalizedTransactions,
+  })
+  // })
+}
+
+export const getAccountTransactionsGroupedHandler = async (
+  req: ServerRequest<unknown, GetAccountTransactionsGroupedParams>,
+  res: ServerResponse
+) => {
+  validationResult(req).throw()
+
+  const { accountId } = req.params
+
+  // MOCKED
+  const isMock = res.locals.userId === MOCKED_USER_ID
+  const mockedTransactionsObject = {
+    data: {
+      transactions: {
+        booked: mockedTransactions,
+      },
+    },
+  }
+  // MOCKED
+
+  const accounts = await getUserAccountWithAccountId({ userId: res.locals.userId, accountId })
+  const account = accounts[0]
+
+  if (!account) {
+    throw new ServerError(403)
+  }
+
+  const { data: transactionsInfo } = !isMock
+    ? await getNordigenAccountTransactions({
+        accountId: account.account_id,
+      })
+    : mockedTransactionsObject
+
+  const transactions = transactionsInfo.transactions.booked
+
+  const groupedTransactions = groupBy(transactions, (transaction) =>
+    format(new Date(transaction.bookingDate), 'MMMM, yyyy')
+  )
+
+  const reducedTransactions = Object.keys(groupedTransactions).reduce(
+    (acc: Array<ReducedGroupedTransactions>, value) => {
+      let expenses = 0
+      let income = 0
+
+      groupedTransactions[value].forEach((transaction) => {
+        const amount = transaction.transactionAmount.amount
+        const amountInt = nordigenCurrency(amount).value
+
+        if (amountInt < 0) {
+          expenses += amountInt * -1
+        } else {
+          income += amountInt
+        }
+      })
+
+      acc.push({
+        date: value,
+        expenses: currency(expenses).format(FORMATTED_CURRENCY),
+        expensesInt: expenses,
+
+        income: currency(income).format(FORMATTED_CURRENCY),
+        incomeInt: income,
+      })
+
+      return acc
+    },
+    []
+  )
+
+  res.json({
+    success: true,
+    data: reducedTransactions,
+  })
+}
+
+export const deleteAccountHandler = async (req: ServerRequest<DeleteAccountBody>, res: ServerResponse) => {
+  validationResult(req).throw()
+
+  const { userId } = res.locals
+  const { accountId } = req.body
+
+  await deleteUserAccount({ userId, accountId })
+
+  res.json({
+    success: true,
   })
 }

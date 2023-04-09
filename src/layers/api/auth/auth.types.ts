@@ -8,8 +8,7 @@
 */
 
 export type RegisterUserBody = {
-  firstName: string
-  lastName: string
+  name: string
   email: string
   password: string
 }
@@ -17,4 +16,14 @@ export type RegisterUserBody = {
 export type LoginUserBody = {
   email: string
   password: string
+}
+
+export type PatchUserInfoBody = {
+  name: string
+  email: string
+}
+
+export type PatchUserPasswordBody = {
+  oldPassword: string
+  newPassword: string
 }

@@ -25,10 +25,16 @@ passwordSchema
   .digits(1) // Must have at least 1 digit
 
 export const validateRegisterUser = [
-  body('firstName').notEmpty(),
-  body('lastName').notEmpty(),
+  body('name').notEmpty(),
   body('email').isEmail(),
   body('password').custom((password) => passwordSchema.validate(password)),
+]
+
+export const validatePatchUserInfo = [body('name').isString(), body('email').isEmail()]
+
+export const validatePatchUserPassword = [
+  body('oldPassword').notEmpty(),
+  body('newPassword').custom((password) => passwordSchema.validate(password)),
 ]
 
 export const validateLoginUser = [body('email').notEmpty(), body('password').notEmpty()]
