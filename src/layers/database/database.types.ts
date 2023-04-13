@@ -1,6 +1,5 @@
 export type CreateUserBody = {
-  firstName: string
-  lastName: string
+  name: string
   email: string
   password: string
 }
@@ -17,8 +16,7 @@ export type GetUserWithEmailBody = {
 export type GetUserWithEmailResponse = {
   id: number
   password: string
-  first_name: string
-  last_name: string
+  name: string
   refresh_token: string
 }
 
@@ -28,6 +26,17 @@ export type GetUserWithRefreshTokenBody = {
 
 export type GetUserWithRefreshTokenResponse = {
   id: number
+}
+
+export type GetUserWithIdBody = {
+  id: number
+}
+
+export type GetUserWithIdResponse = {
+  id: number
+  name: string
+  email: string
+  password: string
 }
 
 export type GetUserAccountWithAccountIdBody = {
@@ -51,6 +60,11 @@ export type GetUserAccountsBody = {
 
 export type GetUserAccountsResponse = GetUserAccountWithAccountIdResponse
 
+export type DeleteUserAccountBody = {
+  userId: number
+  accountId: string
+}
+
 export type CreateUserAccountBody = {
   userId: number
   requisitionId: string
@@ -59,4 +73,15 @@ export type CreateUserAccountBody = {
   accountIban: string
   bankName: string
   bankLogo: string
+}
+
+export type PatchUserInfoBody = {
+  userId: number
+  name: string
+  email: string
+}
+
+export type PatchUserPasswordBody = {
+  userId: number
+  password: string
 }

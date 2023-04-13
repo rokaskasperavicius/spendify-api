@@ -1,1 +1,10 @@
-export { createUser, updateUserRefreshToken, getUserWithEmail, getUserWithRefreshToken } from './database.utils'
+export {
+  createUser,
+  updateUserRefreshToken,
+  getUserWithEmail,
+  getUserWithRefreshToken,
+  getUserWithId,
+  patchUserInfo,
+  patchUserPassword,
+  deleteUserAccount,
+} from './database.utils'

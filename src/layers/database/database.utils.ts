@@ -14,15 +14,20 @@ import {
   GetUserAccountsBody,
   GetUserAccountsResponse,
   CreateUserAccountBody,
+  GetUserWithIdBody,
+  GetUserWithIdResponse,
+  PatchUserInfoBody,
+  PatchUserPasswordBody,
+  DeleteUserAccountBody,
 } from '@layers/database/database.types'
 
-export const createUser = ({ firstName, lastName, email, password }: CreateUserBody) =>
+export const createUser = ({ name, email, password }: CreateUserBody) =>
   db(
     `INSERT INTO
-      users(first_name, last_name, email, password)
-      VALUES($1, $2, $3, $4)
+      users(name, email, password)
+      VALUES($1, $2, $3)
     `,
-    [firstName, lastName, email, password]
+    [name, email, password]
   )
 
 export const updateUserRefreshToken = ({ userId, refreshToken }: UpdateUserRefreshTokenBody) =>
@@ -37,7 +42,7 @@ export const updateUserRefreshToken = ({ userId, refreshToken }: UpdateUserRefre
 export const getUserWithEmail = ({ email }: GetUserWithEmailBody) =>
   db<GetUserWithEmailResponse>(
     `SELECT
-      id, password, first_name, last_name, refresh_token 
+      id, password, name, refresh_token 
       FROM users
       WHERE email = $1
     `,
@@ -52,6 +57,34 @@ export const getUserWithRefreshToken = ({ refreshToken }: GetUserWithRefreshToke
       WHERE refresh_token = $1
     `,
     [refreshToken]
+  )
+
+export const getUserWithId = ({ id }: GetUserWithIdBody) =>
+  db<GetUserWithIdResponse>(
+    `SELECT
+      id, name, email, password
+      FROM users
+      WHERE id = $1
+    `,
+    [id]
+  )
+
+export const patchUserInfo = ({ userId, name, email }: PatchUserInfoBody) =>
+  db(
+    `UPDATE users
+      SET name = $1, email = $2
+      WHERE id = $3
+    `,
+    [name, email, userId]
+  )
+
+export const patchUserPassword = ({ userId, password }: PatchUserPasswordBody) =>
+  db(
+    `UPDATE users
+      SET password = $1
+      WHERE id = $2
+    `,
+    [password, userId]
   )
 
 export const getUserAccountWithAccountId = ({ userId, accountId }: GetUserAccountWithAccountIdBody) =>
@@ -72,6 +105,15 @@ export const getUserAccounts = ({ userId }: GetUserAccountsBody) =>
       WHERE user_id = $1
     `,
     [userId]
+  )
+
+export const deleteUserAccount = ({ userId, accountId }: DeleteUserAccountBody) =>
+  db(
+    `DELETE
+      FROM accounts
+      WHERE user_id = $1 AND account_id = $2
+    `,
+    [userId, accountId]
   )
 
 export const createUserAccount = ({

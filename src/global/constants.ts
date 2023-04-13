@@ -17,4 +17,4 @@ export const MOCKED_USER_ID = 16
 
 // Other
 export const NORDIGEN_CURRENCY = { symbol: '', separator: '', decimal: '.' }
-export const FORMATTED_CURRENCY = { decimal: ',', separator: '.' }
+export const FORMATTED_CURRENCY = { symbol: '', decimal: ',', separator: '.' }
