@@ -36,11 +36,18 @@ app.get('/available-accounts/:requisitionId', verifyUser, validateGetAvailableAc
 
 app.get('/', verifyUser, getAccounts)
 
+// app.get('/test', validateTest, (req: any, res: any) => {
+//   validationResult(req).throw()
+//   console.log(req.query.intervals)
+
+//   res.json({ success: true })
+// })
+
 app.post('/', verifyUser, validateLinkAccount, createAccount)
 
 app.delete('/', verifyUser, validateDeleteAccount, deleteAccountHandler)
 
-app.post('/transactions', verifyUser, validateGetAccountTransactions, getAccountTransactions)
+app.get('/:accountId/transactions', verifyUser, validateGetAccountTransactions, getAccountTransactions)
 
 app.get(
   '/:accountId/transactions/grouped',

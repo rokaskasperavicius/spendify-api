@@ -32,7 +32,6 @@ import { ServerError, ServerRequest, ServerResponse } from '@global/types'
 import {
   CreateAccountRequisitionBody,
   GetAvailableAccountsParams,
-  GetAccountTransactionsBody,
   GetAccountTransactionsParams,
   GetAccountTransactionsQuery,
   GetAccountTransactionsGroupedParams,
@@ -259,12 +258,14 @@ export const createAccount = async (req: ServerRequest<CreateAccountBody>, res: 
   })
 }
 
-export const getAccountTransactions = async (req: ServerRequest<GetAccountTransactionsBody>, res: ServerResponse) => {
+export const getAccountTransactions = async (
+  req: ServerRequest<object, GetAccountTransactionsParams, GetAccountTransactionsQuery>,
+  res: ServerResponse
+) => {
   validationResult(req).throw()
 
-  // const { accountId } = req.params
-  // const { search, category } = req.query
-  const { intervals, accountId, category, search } = req.body
+  const { accountId } = req.params
+  const { search, category, intervals } = req.query
 
   // MOCKED
   const isMock = res.locals.userId === MOCKED_USER_ID
@@ -319,10 +320,14 @@ export const getAccountTransactions = async (req: ServerRequest<GetAccountTransa
       currentBalance = nordigenCurrency(currentBalance).subtract(prevTransactionAmount).format()
     }
 
+    const title = transaction.remittanceInformationUnstructuredArray
+      ? transaction.remittanceInformationUnstructuredArray[0]
+      : transaction.remittanceInformationUnstructured
+
     return {
       id: transaction.transactionId,
       weight: index,
-      title: transaction.remittanceInformationUnstructuredArray[0],
+      title: title || '',
       date: new Date(transaction.bookingDate).getTime(),
 
       amount: nordigenCurrency(transaction.transactionAmount.amount).format(FORMATTED_CURRENCY),
@@ -342,8 +347,8 @@ export const getAccountTransactions = async (req: ServerRequest<GetAccountTransa
   for (const interval of intervals) {
     const intervalizedTransaction = mappedTransactions.filter((transaction) => {
       const transactionDate = transaction.date
-      const fromDate = startOfDay(new Date(interval.from)).getTime()
-      const endDate = endOfDay(new Date(interval.to)).getTime()
+      const fromDate = startOfDay(new Date(parseInt(interval.from))).getTime()
+      const endDate = endOfDay(new Date(parseInt(interval.to))).getTime()
 
       return transactionDate >= fromDate && transactionDate <= endDate
     })
@@ -444,8 +449,12 @@ export const getAccountTransactionsGroupedHandler = async (
 
   const transactions = transactionsInfo.transactions.booked
 
-  const groupedTransactions = groupBy(transactions, (transaction) =>
-    format(new Date(transaction.bookingDate), 'MMMM, yyyy')
+  const groupedTransactions = groupBy(
+    transactions,
+    (transaction: any) => {
+      return format(new Date(transaction.bookingDate), 'MMMM, yyyy')
+    }
+    // format(new Date(transaction.bookingDate), 'MMMM, yyyy')
   )
 
   const reducedTransactions = Object.keys(groupedTransactions).reduce(
@@ -453,7 +462,7 @@ export const getAccountTransactionsGroupedHandler = async (
       let expenses = 0
       let income = 0
 
-      groupedTransactions[value].forEach((transaction) => {
+      groupedTransactions[value].forEach((transaction: any) => {
         const amount = transaction.transactionAmount.amount
         const amountInt = nordigenCurrency(amount).value
 

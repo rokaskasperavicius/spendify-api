@@ -16,15 +16,6 @@ export type DeleteAccountBody = {
   accountId: string
 }
 
-export type GetAccountTransactionsBody = {
-  intervals: Array<{
-    id: string
-    from: number
-    to: number
-  }>
-} & GetAccountTransactionsParams &
-  GetAccountTransactionsQuery
-
 export type GetAccountTransactionsParams = {
   accountId: string
 }
@@ -32,8 +23,11 @@ export type GetAccountTransactionsParams = {
 export type GetAccountTransactionsQuery = {
   search?: string
   category?: 'Food & Groceries' | 'Utilities' | 'Transfers'
-  from?: string
-  to?: string
+  intervals: Array<{
+    id: string
+    from: string
+    to: string
+  }>
 }
 
 export type GetAccountTransactionsGroupedParams = {

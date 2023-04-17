@@ -98,7 +98,8 @@ type NordigenBookedTransactions = {
     bban: string
     currency: string
   }
-  remittanceInformationUnstructuredArray: string[]
+  remittanceInformationUnstructuredArray?: string[]
+  remittanceInformationUnstructured?: string
   internalTransactionId: string
 }
 
