@@ -9,18 +9,20 @@ const fs = require('fs')
 const transactions = []
 
 const randomDates = faker.faker.date
-  .betweens(dateFns.subYears(new Date(), 2), new Date(), 5000)
+  .betweens(dateFns.subYears(new Date(), 1), new Date(), 1000)
   .sort((prev, next) => next.getTime() - prev.getTime())
 
-for (let i = 0; i < 5000; i++) {
+for (let i = 0; i < 1000; i++) {
   transactions.push({
     transactionId: uuid.v4(),
     remittanceInformationUnstructuredArray: [faker.faker.finance.transactionDescription()],
     bookingDate: randomDates[i],
     transactionAmount: {
-      amount: faker.faker.finance.amount(-1000, 1000),
+      amount: faker.faker.finance.amount(-500, 200),
     },
   })
 }
 
-fs.writeFile('./src/config/mocked.json', JSON.stringify(transactions), () => [])
+console.log(transactions)
+
+fs.writeFile('./mocked.json', JSON.stringify(transactions), () => [])

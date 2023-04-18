@@ -85,22 +85,12 @@ export type GetNordigenAccountTransactionsResponse = {
 
 type NordigenBookedTransactions = {
   transactionId: string
-  entryReference?: string
   bookingDate: string
-  valueDate: string
   transactionAmount: {
     amount: string
-    currency: string
-  }
-  debtorName: string
-  debtorAccount: {
-    iban: string
-    bban: string
-    currency: string
   }
   remittanceInformationUnstructuredArray?: string[]
   remittanceInformationUnstructured?: string
-  internalTransactionId: string
 }
 
 export type GetNordigenAccountTransactionsBody = {

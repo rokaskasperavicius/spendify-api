@@ -120,7 +120,7 @@ export const getAvailableAccounts = async (
       data: [
         {
           requisitionId,
-          accountId: uuid(),
+          accountId: 'b29b0ff5-1ec0-4289-bd9f-10f78a8b68a9', // uuid(),
           accountName: 'Fake Account',
           accountIban: 'DK7050516477944871',
           accountBalance: '20.000,00',
@@ -165,7 +165,6 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
 
     for (const account of data) {
       mockedAccounts.push({
-        id: account.id,
         requisitionId: account.requisition_id,
         accountId: account.account_id,
         accountBalance: '20.000,00',
@@ -192,7 +191,6 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
     const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
 
     accounts.push({
-      id: account.id,
       requisitionId: account.requisition_id,
       accountId: account.account_id,
       accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FORMATTED_CURRENCY),
@@ -269,16 +267,13 @@ export const getAccountTransactions = async (
 
   // MOCKED
   const isMock = res.locals.userId === MOCKED_USER_ID
+
   const mockedTransactionsObject = {
-    data: {
-      transactions: {
-        booked: mockedTransactions,
-      },
-    },
+    data: mockedTransactions,
   }
 
   const mockedCurrentBalance = '20000.00'
-  const mokedBalanceObject = {
+  const mockedBalanceObject = {
     data: {
       balances: [
         {
@@ -306,7 +301,7 @@ export const getAccountTransactions = async (
 
   const { data: balances } = !isMock
     ? await getNordigenAccountBalances({ accountId: account.account_id })
-    : mokedBalanceObject
+    : mockedBalanceObject
 
   const transactions = transactionsInfo.transactions.booked
   let currentBalance = balances.balances[0].balanceAmount.amount
@@ -329,7 +324,7 @@ export const getAccountTransactions = async (
       weight: index,
       title: title || '',
       date: new Date(transaction.bookingDate).getTime(),
-
+      category: '',
       amount: nordigenCurrency(transaction.transactionAmount.amount).format(FORMATTED_CURRENCY),
       amountInt: nordigenCurrency(transaction.transactionAmount.amount).value,
       totalAmount: nordigenCurrency(currentBalance).format(FORMATTED_CURRENCY),
@@ -345,7 +340,7 @@ export const getAccountTransactions = async (
   const intervalizedTransactions: { id: string; transactions: Array<object> }[] = []
 
   for (const interval of intervals) {
-    const intervalizedTransaction = mappedTransactions.filter((transaction) => {
+    let intervalizedTransaction = mappedTransactions.filter((transaction) => {
       const transactionDate = transaction.date
       const fromDate = startOfDay(new Date(parseInt(interval.from))).getTime()
       const endDate = endOfDay(new Date(parseInt(interval.to))).getTime()
@@ -353,66 +348,59 @@ export const getAccountTransactions = async (
       return transactionDate >= fromDate && transactionDate <= endDate
     })
 
+    const rules = [
+      // Food & Groceries
+      { pattern: /rema|rema1000/i, category: 'Food & Groceries' },
+      { pattern: /fakta/i, category: 'Food & Groceries' },
+      { pattern: /kvickly/i, category: 'Food & Groceries' },
+      { pattern: /superbrugsen/i, category: 'Food & Groceries' },
+      { pattern: /coop/i, category: 'Food & Groceries' },
+      { pattern: /irma/i, category: 'Food & Groceries' },
+      { pattern: /aldi/i, category: 'Food & Groceries' },
+      { pattern: /lidl/i, category: 'Food & Groceries' },
+      { pattern: /bilka/i, category: 'Food & Groceries' },
+      { pattern: /økomarket/i, category: 'Food & Groceries' },
+      { pattern: /netto/i, category: 'Food & Groceries' },
+      { pattern: /meny/i, category: 'Food & Groceries' },
+      { pattern: /føtex|foetex/i, category: 'Food & Groceries' },
+      { pattern: /7-eleven/i, category: 'Food & Groceries' },
+      { pattern: /wolt/i, category: 'Food & Groceries' },
+      { pattern: /just eat/i, category: 'Food & Groceries' },
+      { pattern: /kiosk/i, category: 'Food & Groceries' },
+      { pattern: /cafeteria/i, category: 'Food & Groceries' },
+      { pattern: /bakery/i, category: 'Food & Groceries' },
+
+      // Transfers
+      { pattern: /\boverførsel\b/i, category: 'Transfers' }, // lønoverførsel belongs to Utilities
+      { pattern: /mobilepay/i, category: 'Transfers' }, // lønoverførsel belongs to Utilities
+
+      // Everything else belongs to Utilities
+    ]
+
+    // Apply categories
+    intervalizedTransaction = intervalizedTransaction.map((transaction) => {
+      const rule = rules.find((rule) => transaction.title.match(rule.pattern))
+
+      return {
+        ...transaction,
+        category: rule?.category || 'Utilities',
+      }
+    })
+
+    intervalizedTransaction = intervalizedTransaction.filter(
+      (transaction) => !category || transaction.category === category
+    )
+
     intervalizedTransactions.push({
       id: interval.id,
       transactions: intervalizedTransaction.sort((prev, next) => prev.weight - next.weight),
     })
-
-    // BayesClassifier.load('./src/config/model.json', null, (err, classifier) => {
-    //   const categorizedTransactions = []
-
-    //   for (const transaction of intervalizedTransaction) {
-    //     const classifiedCategory = classifier.getClassifications(transaction.title)[0].label
-
-    //     if (!category || category === classifiedCategory) {
-    //       categorizedTransactions.push({
-    //         ...transaction,
-    //         category: classifiedCategory,
-    //       })
-    //     }
-    //   }
-
-    //   intervalizedTransactions.push({ hi: 5 } as any)
-
-    //   intervalizedTransactions.push({
-    //     id: interval.id,
-    //     transactions: categorizedTransactions.sort((prev, next) => prev.weight - next.weight),
-    //   })
-    // })
   }
-
-  // // Apply interval filtering
-  // mappedTransactions =
-  //   from && to
-  //     ? mappedTransactions.filter((transaction) => {
-  //         const transactionDate = new Date(transaction.date)
-  //         const fromDate = startOfDay(new Date(from))
-  //         const endDate = endOfDay(new Date(to))
-
-  //         return transactionDate >= fromDate && transactionDate <= endDate
-  //       })
-  //     : mappedTransactions
-
-  // // Apply categorization
-  // BayesClassifier.load('./src/config/model.json', null, (err, classifier) => {
-  //   const categorizedTransactions = []
-
-  //   for (const transaction of mappedTransactions) {
-  //     const classifiedCategory = classifier.getClassifications(transaction.title)[0].label
-
-  //     if (!category || category === classifiedCategory) {
-  //       categorizedTransactions.push({
-  //         ...transaction,
-  //         category: classifiedCategory,
-  //       })
-  //     }
-  //   }
 
   res.json({
     success: true,
     data: intervalizedTransactions,
   })
-  // })
 }
 
 export const getAccountTransactionsGroupedHandler = async (
@@ -426,11 +414,7 @@ export const getAccountTransactionsGroupedHandler = async (
   // MOCKED
   const isMock = res.locals.userId === MOCKED_USER_ID
   const mockedTransactionsObject = {
-    data: {
-      transactions: {
-        booked: mockedTransactions,
-      },
-    },
+    data: mockedTransactions,
   }
   // MOCKED
 
@@ -451,7 +435,7 @@ export const getAccountTransactionsGroupedHandler = async (
 
   const groupedTransactions = groupBy(
     transactions,
-    (transaction: any) => {
+    (transaction) => {
       return format(new Date(transaction.bookingDate), 'MMMM, yyyy')
     }
     // format(new Date(transaction.bookingDate), 'MMMM, yyyy')
@@ -462,7 +446,7 @@ export const getAccountTransactionsGroupedHandler = async (
       let expenses = 0
       let income = 0
 
-      groupedTransactions[value].forEach((transaction: any) => {
+      groupedTransactions[value].forEach((transaction) => {
         const amount = transaction.transactionAmount.amount
         const amountInt = nordigenCurrency(amount).value
 

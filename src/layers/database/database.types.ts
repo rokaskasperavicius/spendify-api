@@ -45,7 +45,6 @@ export type GetUserAccountWithAccountIdBody = {
 }
 
 export type GetUserAccountWithAccountIdResponse = {
-  id: number
   account_id: string
   requisition_id: string
   account_name: string

@@ -90,7 +90,7 @@ export const patchUserPassword = ({ userId, password }: PatchUserPasswordBody) =
 export const getUserAccountWithAccountId = ({ userId, accountId }: GetUserAccountWithAccountIdBody) =>
   db<GetUserAccountWithAccountIdResponse>(
     `SELECT
-      id, account_id, requisition_id, account_name, account_iban, bank_name, bank_logo
+      account_id, requisition_id, account_name, account_iban, bank_name, bank_logo
       FROM accounts
       WHERE user_id = $1 AND account_id = $2
     `,
@@ -100,7 +100,7 @@ export const getUserAccountWithAccountId = ({ userId, accountId }: GetUserAccoun
 export const getUserAccounts = ({ userId }: GetUserAccountsBody) =>
   db<GetUserAccountsResponse>(
     `SELECT
-      id, account_id, requisition_id, account_name, account_iban, bank_name, bank_logo
+      account_id, requisition_id, account_name, account_iban, bank_name, bank_logo
       FROM accounts
       WHERE user_id = $1
     `,
@@ -116,7 +116,7 @@ export const deleteUserAccount = ({ userId, accountId }: DeleteUserAccountBody) 
     [userId, accountId]
   )
 
-export const createUserAccount = ({
+export const createUserAccount = async ({
   userId,
   requisitionId,
   accountId,
@@ -124,11 +124,20 @@ export const createUserAccount = ({
   accountIban,
   bankName,
   bankLogo,
-}: CreateUserAccountBody) =>
-  db(
-    `INSERT INTO
-      accounts(user_id, requisition_id, account_id, account_name, account_iban, bank_name, bank_logo)
-      VALUES($1, $2, $3, $4, $5, $6, $7)
-  `,
-    [userId, requisitionId, accountId, accountName, accountIban, bankName, bankLogo]
-  )
+}: CreateUserAccountBody) => {
+  try {
+    return await db(
+      `INSERT INTO
+        accounts(user_id, requisition_id, account_id, account_name, account_iban, bank_name, bank_logo)
+        VALUES($1, $2, $3, $4, $5, $6, $7)
+    `,
+      [userId, requisitionId, accountId, accountName, accountIban, bankName, bankLogo]
+    )
+  } catch (error) {
+    // if (error instanceof Error && error.code ) {
+    // }
+    console.log(typeof error)
+
+    throw error
+  }
+}
