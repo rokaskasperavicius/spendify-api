@@ -21,6 +21,8 @@ import {
   DeleteUserAccountBody,
 } from '@layers/database/database.types'
 
+import { ServerError, ERROR_CODES } from '@global/types'
+
 export const createUser = ({ name, email, password }: CreateUserBody) =>
   db(
     `INSERT INTO
@@ -116,6 +118,10 @@ export const deleteUserAccount = ({ userId, accountId }: DeleteUserAccountBody) 
     [userId, accountId]
   )
 
+const isDatabaseError = (error: unknown): error is { code: string } => {
+  return typeof error === 'object' && error !== null && 'code' in error
+}
+
 export const createUserAccount = async ({
   userId,
   requisitionId,
@@ -134,9 +140,9 @@ export const createUserAccount = async ({
       [userId, requisitionId, accountId, accountName, accountIban, bankName, bankLogo]
     )
   } catch (error) {
-    // if (error instanceof Error && error.code ) {
-    // }
-    console.log(typeof error)
+    if (isDatabaseError(error) && error.code === '23505') {
+      throw new ServerError(400, ERROR_CODES.DUPLICATE_ACCOUNTS)
+    }
 
     throw error
   }

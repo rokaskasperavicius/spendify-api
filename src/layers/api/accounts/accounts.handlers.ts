@@ -120,7 +120,7 @@ export const getAvailableAccounts = async (
       data: [
         {
           requisitionId,
-          accountId: 'b29b0ff5-1ec0-4289-bd9f-10f78a8b68a9', // uuid(),
+          accountId: uuid(),
           accountName: 'Fake Account',
           accountIban: 'DK7050516477944871',
           accountBalance: '20.000,00',
