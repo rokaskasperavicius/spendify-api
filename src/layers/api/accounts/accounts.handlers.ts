@@ -7,6 +7,8 @@ import { v4 as uuid } from 'uuid'
 import { faker } from '@faker-js/faker'
 import groupBy from 'lodash/groupBy'
 
+import requestIp from 'request-ip'
+
 // Helpers
 import {
   getNordigenInstitutions,
@@ -157,6 +159,7 @@ export const getAvailableAccounts = async (
 }
 
 export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
+  console.log(requestIp.getClientIp(req))
   const data = await getUserAccounts({ userId: res.locals.userId })
 
   // MOCKED
