@@ -18,6 +18,10 @@ export type LoginUserBody = {
   password: string
 }
 
+export type SignOutUserBody = {
+  refreshToken: string
+}
+
 export type PatchUserInfoBody = {
   name: string
   email: string

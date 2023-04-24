@@ -159,7 +159,6 @@ export const getAvailableAccounts = async (
 }
 
 export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
-  console.log(requestIp.getClientIp(req))
   const data = await getUserAccounts({ userId: res.locals.userId })
 
   // MOCKED

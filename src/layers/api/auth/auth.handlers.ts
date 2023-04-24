@@ -20,12 +20,20 @@ import {
   getUserWithId,
   patchUserInfo,
   patchUserPassword,
+  setUserRefreshToken,
+  deleteUserRefreshToken,
 } from '@layers/database'
 import { createAccessToken } from '@layers/api/auth/auth.utils'
 
 // Types
 import { ServerError, ERROR_CODES, ServerRequest, ServerResponse } from '@global/types'
-import { RegisterUserBody, LoginUserBody, PatchUserInfoBody, PatchUserPasswordBody } from '@layers/api/auth/auth.types'
+import {
+  RegisterUserBody,
+  LoginUserBody,
+  PatchUserInfoBody,
+  PatchUserPasswordBody,
+  SignOutUserBody,
+} from '@layers/api/auth/auth.types'
 
 export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: ServerResponse) => {
   validationResult(req).throw()
@@ -52,6 +60,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   validationResult(req).throw()
 
   const { email, password } = req.body
+  const ipAddress = req.ip
 
   const users = await getUserWithEmail({ email })
   const user = users[0]
@@ -71,10 +80,9 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   }
 
   const accessToken = createAccessToken({ userId })
-
   const refreshToken = uuid()
 
-  await updateUserRefreshToken({ userId, refreshToken })
+  await setUserRefreshToken({ userId, refreshToken, ipAddress })
 
   res.json({
     success: true,
@@ -111,7 +119,7 @@ export const refreshUserToken = async (req: ServerRequest, res: ServerResponse) 
   const accessToken = createAccessToken({ userId })
   const newRefreshToken = uuid()
 
-  await updateUserRefreshToken({ userId, refreshToken: newRefreshToken })
+  await updateUserRefreshToken({ oldRefreshToken: refreshToken, newRefreshToken })
 
   res.json({
     success: true,
@@ -119,6 +127,18 @@ export const refreshUserToken = async (req: ServerRequest, res: ServerResponse) 
       accessToken,
       refreshToken: newRefreshToken,
     },
+  })
+}
+
+export const signOutUserHandler = async (req: ServerRequest<SignOutUserBody>, res: ServerResponse) => {
+  validationResult(req).throw()
+
+  const { refreshToken } = req.body
+
+  await deleteUserRefreshToken({ refreshToken })
+
+  res.json({
+    success: true,
   })
 }
 

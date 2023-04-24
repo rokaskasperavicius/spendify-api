@@ -19,6 +19,8 @@ import {
   PatchUserInfoBody,
   PatchUserPasswordBody,
   DeleteUserAccountBody,
+  SetUserRefreshTokenBody,
+  DeleteUserRefreshTokenBody,
 } from '@layers/database/database.types'
 
 import { ServerError, ERROR_CODES } from '@global/types'
@@ -32,19 +34,37 @@ export const createUser = ({ name, email, password }: CreateUserBody) =>
     [name, email, password]
   )
 
-export const updateUserRefreshToken = ({ userId, refreshToken }: UpdateUserRefreshTokenBody) =>
+export const setUserRefreshToken = ({ userId, refreshToken, ipAddress }: SetUserRefreshTokenBody) =>
   db(
-    `UPDATE users
-      SET refresh_token = $2
-      WHERE id = $1
+    `INSERT INTO
+      tokens(user_id, refresh_token, ip_address)
+      VALUES($1, $2, $3)
     `,
-    [userId, refreshToken]
+    [userId, refreshToken, ipAddress]
+  )
+
+export const updateUserRefreshToken = ({ oldRefreshToken, newRefreshToken }: UpdateUserRefreshTokenBody) =>
+  db(
+    `UPDATE tokens
+      SET refresh_token = $2
+      WHERE refresh_token = $1
+    `,
+    [oldRefreshToken, newRefreshToken]
+  )
+
+export const deleteUserRefreshToken = ({ refreshToken }: DeleteUserRefreshTokenBody) =>
+  db(
+    `DELETE
+      from tokens
+      WHERE refresh_token = $1
+    `,
+    [refreshToken]
   )
 
 export const getUserWithEmail = ({ email }: GetUserWithEmailBody) =>
   db<GetUserWithEmailResponse>(
     `SELECT
-      id, password, name, refresh_token 
+      id, password, name 
       FROM users
       WHERE email = $1
     `,
@@ -54,8 +74,8 @@ export const getUserWithEmail = ({ email }: GetUserWithEmailBody) =>
 export const getUserWithRefreshToken = ({ refreshToken }: GetUserWithRefreshTokenBody) =>
   db<GetUserWithRefreshTokenResponse>(
     `SELECT
-      id
-      FROM users
+      user_id
+      FROM tokens
       WHERE refresh_token = $1
     `,
     [refreshToken]

@@ -17,6 +17,7 @@ import {
   refreshUserToken,
   patchUserInfoHandler,
   patchUserPasswordHandler,
+  signOutUserHandler,
 } from '@layers/api/auth/auth.handlers'
 
 // Helpers
@@ -28,6 +29,7 @@ import {
   validateLoginUser,
   validatePatchUserInfo,
   validatePatchUserPassword,
+  validateSignOutUser,
 } from '@layers/api/auth/auth.validators'
 
 const app = express.Router()
@@ -38,6 +40,7 @@ app.post('/login', validateLoginUser, loginUser)
 
 app.post('/refresh-token', refreshUserToken)
 
+app.delete('/sign-out', verifyUser, validateSignOutUser, signOutUserHandler)
 app.patch('/user-info', verifyUser, validatePatchUserInfo, patchUserInfoHandler)
 app.patch('/user-password', verifyUser, validatePatchUserPassword, patchUserPasswordHandler)
 

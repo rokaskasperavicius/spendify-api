@@ -7,4 +7,6 @@ export {
   patchUserInfo,
   patchUserPassword,
   deleteUserAccount,
+  setUserRefreshToken,
+  deleteUserRefreshToken,
 } from './database.utils'

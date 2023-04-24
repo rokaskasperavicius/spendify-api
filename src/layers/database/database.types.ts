@@ -5,8 +5,18 @@ export type CreateUserBody = {
 }
 
 export type UpdateUserRefreshTokenBody = {
+  oldRefreshToken: string
+  newRefreshToken: string
+}
+
+export type DeleteUserRefreshTokenBody = {
+  refreshToken: string
+}
+
+export type SetUserRefreshTokenBody = {
   userId: number
   refreshToken: string
+  ipAddress: string
 }
 
 export type GetUserWithEmailBody = {
@@ -17,7 +27,6 @@ export type GetUserWithEmailResponse = {
   id: number
   password: string
   name: string
-  refresh_token: string
 }
 
 export type GetUserWithRefreshTokenBody = {
