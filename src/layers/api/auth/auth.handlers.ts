@@ -10,6 +10,7 @@
 import bcrypt from 'bcrypt'
 import { v4 as uuid } from 'uuid'
 import { validationResult } from 'express-validator'
+import requestIp from 'request-ip'
 
 // Helpers
 import {
@@ -60,7 +61,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   validationResult(req).throw()
 
   const { email, password } = req.body
-  const ipAddress = req.ip
+  const ipAddress = requestIp.getClientIp(req)
 
   const users = await getUserWithEmail({ email })
   const user = users[0]
@@ -82,7 +83,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   const accessToken = createAccessToken({ userId })
   const refreshToken = uuid()
 
-  await setUserRefreshToken({ userId, refreshToken, ipAddress })
+  await setUserRefreshToken({ userId, refreshToken, ipAddress: ipAddress || '::1' })
 
   res.json({
     success: true,
@@ -114,7 +115,7 @@ export const refreshUserToken = async (req: ServerRequest, res: ServerResponse) 
     throw new ServerError(401)
   }
 
-  const userId = user.id
+  const userId = user.user_id
 
   const accessToken = createAccessToken({ userId })
   const newRefreshToken = uuid()

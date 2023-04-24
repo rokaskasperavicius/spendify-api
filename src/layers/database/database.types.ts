@@ -34,7 +34,7 @@ export type GetUserWithRefreshTokenBody = {
 }
 
 export type GetUserWithRefreshTokenResponse = {
-  id: number
+  user_id: number
 }
 
 export type GetUserWithIdBody = {
