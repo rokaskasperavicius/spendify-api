@@ -21,6 +21,8 @@ import {
   DeleteUserAccountBody,
   SetUserRefreshTokenBody,
   DeleteUserRefreshTokenBody,
+  GetAllUserTokensBody,
+  GetAllUserTokensResponse,
 } from '@layers/database/database.types'
 
 import { ServerError, ERROR_CODES } from '@global/types'
@@ -34,13 +36,13 @@ export const createUser = ({ name, email, password }: CreateUserBody) =>
     [name, email, password]
   )
 
-export const setUserRefreshToken = ({ userId, refreshToken, ipAddress }: SetUserRefreshTokenBody) =>
+export const setUserRefreshToken = ({ userId, refreshToken, ipAddress, ipLocation }: SetUserRefreshTokenBody) =>
   db(
     `INSERT INTO
-      tokens(user_id, refresh_token, ip_address)
-      VALUES($1, $2, $3)
+      tokens(user_id, refresh_token, ip_address, ip_location)
+      VALUES($1, $2, $3, $4)
     `,
-    [userId, refreshToken, ipAddress]
+    [userId, refreshToken, ipAddress, ipLocation]
   )
 
 export const updateUserRefreshToken = ({ oldRefreshToken, newRefreshToken }: UpdateUserRefreshTokenBody) =>
@@ -50,6 +52,15 @@ export const updateUserRefreshToken = ({ oldRefreshToken, newRefreshToken }: Upd
       WHERE refresh_token = $1
     `,
     [oldRefreshToken, newRefreshToken]
+  )
+
+export const getAllUserTokens = ({ userId }: GetAllUserTokensBody) =>
+  db<GetAllUserTokensResponse>(
+    `SELECT refresh_token, ip_address, ip_location
+      FROM tokens
+      WHERE user_id = $1
+    `,
+    [userId]
   )
 
 export const deleteUserRefreshToken = ({ refreshToken }: DeleteUserRefreshTokenBody) =>

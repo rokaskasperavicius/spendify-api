@@ -31,3 +31,9 @@ export type PatchUserPasswordBody = {
   oldPassword: string
   newPassword: string
 }
+
+export type GetIPLocationSuccessResponse = {
+  status: string
+  country: string
+  city: string
+}

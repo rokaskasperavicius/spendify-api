@@ -13,10 +13,21 @@ export type DeleteUserRefreshTokenBody = {
   refreshToken: string
 }
 
+export type GetAllUserTokensBody = {
+  userId: number
+}
+
+export type GetAllUserTokensResponse = {
+  refresh_token: string
+  ip_address: string
+  ip_location: string
+}
+
 export type SetUserRefreshTokenBody = {
   userId: number
   refreshToken: string
   ipAddress: string
+  ipLocation: string
 }
 
 export type GetUserWithEmailBody = {

@@ -9,4 +9,5 @@ export {
   deleteUserAccount,
   setUserRefreshToken,
   deleteUserRefreshToken,
+  getAllUserTokens,
 } from './database.utils'

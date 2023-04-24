@@ -31,7 +31,8 @@
     "request-ip": "^3.3.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
@@ -44,6 +45,7 @@
     "@types/pg": "^8.6.6",
     "@types/request-ip": "^0.0.37",
     "@types/uuid": "^9.0.1",
+    "@types/validator": "^13.7.15",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.34.0",

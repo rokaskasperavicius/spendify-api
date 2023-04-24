@@ -8,9 +8,11 @@
 */
 
 import bcrypt from 'bcrypt'
+import axios from 'axios'
 import { v4 as uuid } from 'uuid'
 import { validationResult } from 'express-validator'
 import requestIp from 'request-ip'
+import isIP from 'validator/lib/isIP'
 
 // Helpers
 import {
@@ -23,6 +25,7 @@ import {
   patchUserPassword,
   setUserRefreshToken,
   deleteUserRefreshToken,
+  getAllUserTokens,
 } from '@layers/database'
 import { createAccessToken } from '@layers/api/auth/auth.utils'
 
@@ -34,6 +37,7 @@ import {
   PatchUserInfoBody,
   PatchUserPasswordBody,
   SignOutUserBody,
+  GetIPLocationSuccessResponse,
 } from '@layers/api/auth/auth.types'
 
 export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: ServerResponse) => {
@@ -61,7 +65,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   validationResult(req).throw()
 
   const { email, password } = req.body
-  const ipAddress = requestIp.getClientIp(req)
+  const ipAddress = requestIp.getClientIp(req) || '::1'
 
   const users = await getUserWithEmail({ email })
   const user = users[0]
@@ -83,7 +87,16 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   const accessToken = createAccessToken({ userId })
   const refreshToken = uuid()
 
-  await setUserRefreshToken({ userId, refreshToken, ipAddress: ipAddress || '::1' })
+  // Get IP location
+  const { data: ipData } = await axios.get<GetIPLocationSuccessResponse>(`http://ip-api.com/json/${ipAddress}`)
+
+  let ipLocation = 'Localhost'
+
+  if (ipData.status === 'success') {
+    ipLocation = `${ipData.country}, ${ipData.city}`
+  }
+
+  await setUserRefreshToken({ userId, refreshToken, ipAddress, ipLocation })
 
   res.json({
     success: true,
@@ -140,6 +153,22 @@ export const signOutUserHandler = async (req: ServerRequest<SignOutUserBody>, re
 
   res.json({
     success: true,
+  })
+}
+
+export const getUserDevicesHandler = async (req: ServerRequest, res: ServerResponse) => {
+  const userId = res.locals.userId
+
+  const devices = await getAllUserTokens({ userId })
+
+  res.json({
+    success: true,
+
+    data: devices.map(({ refresh_token, ip_address, ip_location }) => ({
+      refreshToken: refresh_token,
+      ipAddress: ip_address,
+      ipLocation: ip_location,
+    })),
   })
 }
 
