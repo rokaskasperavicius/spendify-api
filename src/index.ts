@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
+import rateLimit from 'express-rate-limit'
 import 'dotenv/config'
 
 // Routes
@@ -15,21 +16,30 @@ app.use(express.json())
 const port = process.env.PORT || 8080
 
 // Allowed urls for accessing our API
-// const corsOptions = {
-//   origin: [
-//     '*',
-//     // For development
-//     'http://localhost:3000',
+const corsOptions = {
+  origin: [
+    '*',
+    // For development
+    'http://localhost:3000',
 
-//     // For production
-//     'https://spendify-client.vercel.app',
-//     'https://www.spendify.dk',
-//   ],
-//   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
-// }
+    // For production
+    'https://spendify-client.vercel.app',
+    'https://www.spendify.dk',
+  ],
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+}
 
 // Setup CORS
-app.use(cors({ origin: true }))
+app.use(cors(corsOptions))
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minutes
+  max: 30, // Limit each IP to 30 requests per `window` (here, per 1 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+
+app.use(limiter)
 
 app.get('/', async (req, res) => {
   res.send('Spendify API')

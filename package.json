@@ -21,6 +21,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^6.7.0",
     "express-validator": "^6.14.3",
     "fuzzysort": "^2.0.4",
     "jsonwebtoken": "^9.0.0",

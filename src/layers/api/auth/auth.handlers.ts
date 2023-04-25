@@ -125,7 +125,7 @@ export const refreshUserToken = async (req: ServerRequest, res: ServerResponse) 
   const user = users[0]
 
   if (!user) {
-    throw new ServerError(401)
+    throw new ServerError(403)
   }
 
   const userId = user.user_id

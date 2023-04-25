@@ -41,9 +41,9 @@ app.post('/login', validateLoginUser, loginUser)
 
 app.post('/refresh-token', refreshUserToken)
 
-app.get('/devices', verifyUser, getUserDevicesHandler)
+app.delete('/sign-out', validateSignOutUser, signOutUserHandler)
 
-app.delete('/sign-out', verifyUser, validateSignOutUser, signOutUserHandler)
+app.get('/devices', verifyUser, getUserDevicesHandler)
 
 app.patch('/user-info', verifyUser, validatePatchUserInfo, patchUserInfoHandler)
 app.patch('/user-password', verifyUser, validatePatchUserPassword, patchUserPasswordHandler)
