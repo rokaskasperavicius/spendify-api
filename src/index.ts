@@ -18,7 +18,6 @@ const port = process.env.PORT || 8080
 // Allowed urls for accessing our API
 const corsOptions = {
   origin: [
-    '*',
     // For development
     'http://localhost:3000',
 
