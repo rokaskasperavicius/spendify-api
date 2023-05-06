@@ -8,17 +8,50 @@ const fs = require('fs')
 
 const transactions = []
 
-const randomDates = faker.faker.date
-  .betweens(dateFns.subYears(new Date(), 1), new Date(), 1000)
-  .sort((prev, next) => next.getTime() - prev.getTime())
+const titles = [
+  '7-ELEVEN B005, KOEBENHAVN K',
+  'FAKTA 451, ROSKILDE',
+  'MobilePay Victor Eskildsen',
+  'Wolt, Copenhagen',
+  'MobilePay køb MobilePay Coop App',
+  'RUC, AABYHOEJ',
+  'TREKRONER KIOSK OG CANDY, ROSKILDE',
+  'COOP SUPERBRUGSEN TREKRON, ROSKILDE',
+  'Cafeteria il lago, ROSKILDE',
+  'Dankort-køb Rejsekort - DSB Nota',
+  'Just Eat.dk, Copenhagen',
+  'MENY, ROSKILDE',
+  'ABSALON, KØBENHAVN V',
+]
 
-for (let i = 0; i < 1000; i++) {
+const salary = [
+  new Date('2023-04-30'),
+  new Date('2023-03-30'),
+  new Date('2023-02-28'),
+  new Date('2023-01-30'),
+  new Date('2022-12-30'),
+  new Date('2022-11-30'),
+  new Date('2022-10-30'),
+  new Date('2022-09-30'),
+  new Date('2022-08-30'),
+  new Date('2022-07-30'),
+  new Date('2022-06-30'),
+  new Date('2022-05-30'),
+]
+
+const randomDates = faker.faker.date.betweens(dateFns.subYears(new Date(), 1), new Date(), 600)
+randomDates.push(...salary)
+randomDates.sort((prev, next) => next.getTime() - prev.getTime())
+
+for (let i = 0; i < 600; i++) {
   transactions.push({
     transactionId: uuid.v4(),
-    remittanceInformationUnstructuredArray: [faker.faker.finance.transactionDescription()],
-    bookingDate: randomDates[i],
+    remittanceInformationUnstructuredArray: [
+      salary.includes(randomDates[i]) ? 'Lønoverførsel' : titles[Math.floor(Math.random() * titles.length)],
+    ],
+    valueDate: randomDates[i],
     transactionAmount: {
-      amount: faker.faker.finance.amount(-500, 200),
+      amount: salary.includes(randomDates[i]) ? 6000 : faker.faker.finance.amount(-200, -20),
     },
   })
 }
