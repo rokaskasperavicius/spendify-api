@@ -7,7 +7,7 @@ export const validateCreateAccountRequisition = [
 
 export const validateGetAvailableAccounts = [param('requisitionId').notEmpty()]
 
-export const validateLinkAccount = [body('requisitionId').notEmpty(), body('accountId').notEmpty()]
+export const validateLinkAccount = [body('accountId').notEmpty()]
 
 export const validateDeleteAccount = [body('accountId').notEmpty()]
 

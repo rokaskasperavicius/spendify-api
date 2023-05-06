@@ -85,7 +85,7 @@ export type GetNordigenAccountTransactionsResponse = {
 
 type NordigenBookedTransactions = {
   transactionId: string
-  bookingDate: string
+  valueDate: string
   transactionAmount: {
     amount: string
   }

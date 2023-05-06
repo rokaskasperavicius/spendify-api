@@ -121,11 +121,11 @@ export const getAvailableAccounts = async (
 
       data: [
         {
-          requisitionId,
-          accountId: uuid(),
+          accountId: '40204295-8519-4594-a07a-4cc40a8e0952',
           accountName: 'Fake Account',
           accountIban: 'DK7050516477944871',
           accountBalance: '20.000,00',
+          bankLogo: 'https://cdn.nordigen.com/ais/DANSKEBANK_BUSINESS_DABADKKK.png',
         },
       ],
     })
@@ -140,14 +140,17 @@ export const getAvailableAccounts = async (
   const accounts = []
 
   for (const accountId of data.accounts) {
+    const { data: accountMeta } = await getNordigenAccountMeta({ accountId })
+    const { data: bankInfo } = await getNordigenInstitution({ institutionId: accountMeta.institution_id })
+
     const { data: details } = await getNordigenAccountDetails({ accountId })
     const { data: balances } = await getNordigenAccountBalances({ accountId })
 
     accounts.push({
-      requisitionId,
       accountId,
       accountName: details.account.name,
       accountIban: details.account.iban,
+      bankLogo: bankInfo.logo,
       accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FORMATTED_CURRENCY),
     })
   }
@@ -167,7 +170,6 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
 
     for (const account of data) {
       mockedAccounts.push({
-        requisitionId: account.requisition_id,
         accountId: account.account_id,
         accountBalance: '20.000,00',
         accountName: account.account_name,
@@ -193,7 +195,6 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
     const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
 
     accounts.push({
-      requisitionId: account.requisition_id,
       accountId: account.account_id,
       accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FORMATTED_CURRENCY),
       accountName: account.account_name,
@@ -212,7 +213,7 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
 export const createAccount = async (req: ServerRequest<CreateAccountBody>, res: ServerResponse) => {
   validationResult(req).throw()
 
-  const { requisitionId, accountId } = req.body
+  const { accountId } = req.body
 
   const { userId } = res.locals
 
@@ -221,13 +222,11 @@ export const createAccount = async (req: ServerRequest<CreateAccountBody>, res: 
   if (userId === MOCKED_USER_ID) {
     await createUserAccount({
       userId,
-      requisitionId,
       accountId,
-      accountName: faker.finance.accountName(),
+      accountName: 'Studiekonto',
       accountIban: faker.finance.iban(true, 'DK'),
       bankName: 'Fake Bank',
-      bankLogo:
-        'https://w7.pngwing.com/pngs/42/185/png-transparent-fake-news-bank-account-money-balance-others-text-trademark-logo.png',
+      bankLogo: 'https://cdn.nordigen.com/ais/DANSKEBANK_BUSINESS_DABADKKK.png',
     })
 
     res.json({
@@ -245,7 +244,6 @@ export const createAccount = async (req: ServerRequest<CreateAccountBody>, res: 
 
   await createUserAccount({
     userId,
-    requisitionId,
     accountId,
     accountName: accountDetails.account.name,
     accountIban: accountDetails.account.iban,
@@ -325,7 +323,7 @@ export const getAccountTransactions = async (
       id: transaction.transactionId,
       weight: index,
       title: title || '',
-      date: new Date(transaction.bookingDate).getTime(),
+      date: new Date(transaction.valueDate).getTime(),
       category: '',
       amount: nordigenCurrency(transaction.transactionAmount.amount).format(FORMATTED_CURRENCY),
       amountInt: nordigenCurrency(transaction.transactionAmount.amount).value,
@@ -435,12 +433,8 @@ export const getAccountTransactionsGroupedHandler = async (
 
   const transactions = transactionsInfo.transactions.booked
 
-  const groupedTransactions = groupBy(
-    transactions,
-    (transaction) => {
-      return format(new Date(transaction.bookingDate), 'MMMM, yyyy')
-    }
-    // format(new Date(transaction.bookingDate), 'MMMM, yyyy')
+  const groupedTransactions = groupBy(transactions, (transaction) =>
+    format(new Date(transaction.valueDate), 'MMMM, yyyy')
   )
 
   const reducedTransactions = Object.keys(groupedTransactions).reduce(

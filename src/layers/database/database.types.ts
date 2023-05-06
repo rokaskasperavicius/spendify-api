@@ -66,7 +66,6 @@ export type GetUserAccountWithAccountIdBody = {
 
 export type GetUserAccountWithAccountIdResponse = {
   account_id: string
-  requisition_id: string
   account_name: string
   account_iban: string
   bank_name: string
@@ -86,7 +85,6 @@ export type DeleteUserAccountBody = {
 
 export type CreateUserAccountBody = {
   userId: number
-  requisitionId: string
   accountId: string
   accountName: string
   accountIban: string

@@ -8,7 +8,6 @@ export type GetAvailableAccountsParams = {
 }
 
 export type CreateAccountBody = {
-  requisitionId: string
   accountId: string
 }
 
