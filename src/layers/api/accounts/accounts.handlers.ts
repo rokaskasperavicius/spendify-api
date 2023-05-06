@@ -88,7 +88,12 @@ export const createAccountRequisition = async (
 
   // MOCKED
 
-  const { data: agreement } = await createNordigenAgreement({ institutionId })
+  const { data: bankInfo } = await getNordigenInstitution({ institutionId })
+
+  const { data: agreement } = await createNordigenAgreement({
+    institutionId,
+    maxHistoricalDays: bankInfo.transaction_total_days,
+  })
 
   const { data: requisition } = await createNordigenRequisition({
     redirect,

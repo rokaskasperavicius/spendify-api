@@ -2,12 +2,7 @@
 import { nordigenApi } from '@layers/nordigen/nordigen.api'
 
 // Constants
-import {
-  NORDIGEN_MAX_HISTORICAL_DAYS,
-  NORDIGEN_ACCESS_VALID_FOR_DAYS,
-  NORDIGEN_ACCESS_SCOPE,
-  NORDIGEN_COUNTRY,
-} from '@global/constants'
+import { NORDIGEN_ACCESS_VALID_FOR_DAYS, NORDIGEN_ACCESS_SCOPE, NORDIGEN_COUNTRY } from '@global/constants'
 
 // Types
 import {
@@ -29,10 +24,10 @@ import {
   GetNordigenRequisitionBody,
 } from '@layers/nordigen/nordigen.types'
 
-export const createNordigenAgreement = ({ institutionId }: CreateNordigenAgreementBody) =>
+export const createNordigenAgreement = ({ institutionId, maxHistoricalDays }: CreateNordigenAgreementBody) =>
   nordigenApi.post<CreateNordigenAgreementResponse>('/agreements/enduser/', {
     institution_id: institutionId,
-    max_historical_days: NORDIGEN_MAX_HISTORICAL_DAYS,
+    max_historical_days: maxHistoricalDays,
     access_valid_for_days: NORDIGEN_ACCESS_VALID_FOR_DAYS,
     access_scope: NORDIGEN_ACCESS_SCOPE,
   })
