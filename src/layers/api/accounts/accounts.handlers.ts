@@ -1,13 +1,10 @@
 import { validationResult } from 'express-validator'
 import currency from 'currency.js'
 import fuzzysort from 'fuzzysort'
-import { BayesClassifier } from 'natural'
 import { startOfDay, endOfDay, format } from 'date-fns'
 import { v4 as uuid } from 'uuid'
 import { faker } from '@faker-js/faker'
 import groupBy from 'lodash/groupBy'
-
-import requestIp from 'request-ip'
 
 // Helpers
 import {
