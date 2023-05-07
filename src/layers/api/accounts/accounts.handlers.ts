@@ -374,7 +374,7 @@ export const getAccountTransactions = async (
 
       // Transfers
       { pattern: /\boverførsel\b/i, category: 'Transfers' }, // lønoverførsel belongs to Utilities
-      { pattern: /mobilepay/i, category: 'Transfers' }, // lønoverførsel belongs to Utilities
+      { pattern: /mobilepay/i, category: 'Transfers' },
 
       // Everything else belongs to Utilities
     ]
