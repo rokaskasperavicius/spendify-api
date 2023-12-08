@@ -63,9 +63,15 @@ app.use(
       code = error.code || -1
     }
 
+    let message = error.message
+
+    if (process.env.NODE_ENV === 'production') {
+      message = 'Something went wrong'
+    }
+
     res.status(status).json({
       success: false,
-      message: error.message,
+      message,
       code,
     })
   }
