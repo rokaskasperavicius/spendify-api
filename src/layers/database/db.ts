@@ -1,6 +1,11 @@
 import { Pool, QueryResult } from 'pg'
 
-const pool = new Pool({ ssl: { rejectUnauthorized: false } })
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+})
 
 interface ServerQueryResult<T> extends QueryResult {
   rows: T[]
