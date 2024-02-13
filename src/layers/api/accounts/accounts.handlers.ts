@@ -44,6 +44,7 @@ import { MOCKED_USER_ID, NORDIGEN_CURRENCY, FORMATTED_CURRENCY } from '@global/c
 
 // Mocks
 import { mockedTransactions } from '@mocks/mockedTransactions'
+import axios, { AxiosError } from 'axios'
 
 const nordigenCurrency = (value: string) => currency(value, NORDIGEN_CURRENCY)
 
@@ -192,23 +193,45 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
   // MOCKED
 
   const accounts = []
+  let someExpired = false
+  let accountId
 
-  for (const account of data) {
-    const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
+  try {
+    for (const account of data) {
+      accountId = account.account_id
 
-    accounts.push({
-      accountId: account.account_id,
-      accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FORMATTED_CURRENCY),
-      accountName: account.account_name,
-      accountIban: account.account_iban,
-      bankName: account.bank_name,
-      bankLogo: account.bank_logo,
-    })
+      const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
+
+      accounts.push({
+        accountId: account.account_id,
+        accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FORMATTED_CURRENCY),
+        accountName: account.account_name,
+        accountIban: account.account_iban,
+        bankName: account.bank_name,
+        bankLogo: account.bank_logo,
+      })
+    }
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const { detail } = err.response?.data || {}
+
+      // Expired account
+      if (accountId && typeof detail === 'string' && detail?.includes('expired')) {
+        someExpired = true
+
+        // Remove it from the system
+        await deleteUserAccount({ userId: res.locals.userId, accountId })
+        accountId = undefined
+      }
+    }
   }
 
   res.json({
     success: true,
-    data: accounts,
+    data: {
+      someExpired,
+      accounts,
+    },
   })
 }
 

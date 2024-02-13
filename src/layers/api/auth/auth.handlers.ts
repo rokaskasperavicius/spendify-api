@@ -12,7 +12,6 @@ import axios from 'axios'
 import { v4 as uuid } from 'uuid'
 import { validationResult } from 'express-validator'
 import requestIp from 'request-ip'
-import isIP from 'validator/lib/isIP'
 
 // Helpers
 import {
