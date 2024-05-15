@@ -1,7 +1,11 @@
+import { ServerRequest } from '@global/types'
+
 export type CreateAccountRequisitionBody = {
   institutionId: string
   redirect: string
 }
+
+export type GetAccountInstitutionsReq = ServerRequest<object, object, { query: string }>
 
 export type GetAvailableAccountsParams = {
   requisitionId: string

@@ -37,6 +37,7 @@ import {
   CreateAccountBody,
   DeleteAccountBody,
   ReducedGroupedTransactions,
+  GetAccountInstitutionsReq,
 } from '@layers/api/accounts/accounts.types'
 
 // Constants
@@ -44,17 +45,22 @@ import { MOCKED_USER_ID, NORDIGEN_CURRENCY, FORMATTED_CURRENCY } from '@global/c
 
 // Mocks
 import { mockedTransactions } from '@mocks/mockedTransactions'
-import axios, { AxiosError } from 'axios'
+import { isAxiosError } from 'axios'
 
 const nordigenCurrency = (value: string) => currency(value, NORDIGEN_CURRENCY)
 
-export const getAccountInstitutions = async (req: ServerRequest, res: ServerResponse) => {
+export const getAccountInstitutions = async (req: GetAccountInstitutionsReq, res: ServerResponse) => {
   const { data: institutions } = await getNordigenInstitutions()
+  const { query } = req.query
+
+  const searchResults = query
+    ? fuzzysort.go(query, institutions, { key: 'name' }).map((search) => search.obj)
+    : institutions
 
   res.json({
     success: true,
 
-    data: institutions.map(({ id, name, logo }) => ({
+    data: searchResults.map(({ id, name, logo }) => ({
       id: id,
       bankName: name,
       bankLogo: logo,
@@ -212,7 +218,7 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
       })
     }
   } catch (err) {
-    if (axios.isAxiosError(err)) {
+    if (isAxiosError(err)) {
       const { detail } = err.response?.data || {}
 
       // Expired account
