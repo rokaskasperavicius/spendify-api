@@ -77,6 +77,30 @@ app.use(
   }
 )
 
-app.listen(port, () => {
+import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend'
+
+const mailerSend = new MailerSend({
+  apiKey: process.env.MAILER_API as string,
+})
+
+const sentFrom = new Sender('no-reply@spendify.dk', 'Spendify')
+
+const recipients = [new Recipient('goodname258@gmail.com', 'Rokas Kasperavicius')]
+
+const emailParams = new EmailParams()
+  .setFrom(sentFrom)
+  .setTo(recipients)
+  .setReplyTo(sentFrom)
+  .setSubject('[no-reply] Verify your Spendify account')
+  .setHtml('<a href="https://spendify.dk" target="_blank">https://spendify.dk</a>')
+// .setText('This is the text content')
+
+app.listen(port, async () => {
   console.log(`⚡️ [server]: Server is running at http://localhost:${port}`)
+
+  try {
+    await mailerSend.email.send(emailParams)
+  } catch (error) {
+    console.log(error)
+  }
 })
