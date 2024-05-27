@@ -1,10 +1,10 @@
 import { Pool, QueryResult } from 'pg'
+import { PrismaClient } from '@prisma/client'
+import { DATABASE_URL, NODE_ENV } from '@global/constants'
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  connectionString: DATABASE_URL,
+  ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 })
 
 interface ServerQueryResult<T> extends QueryResult {
@@ -22,3 +22,7 @@ export const db = async <T>(query: string, values?: Array<string | number>) => {
     client.release()
   }
 }
+
+const prisma = new PrismaClient()
+
+export default prisma

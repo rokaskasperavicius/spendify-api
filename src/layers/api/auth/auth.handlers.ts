@@ -38,6 +38,7 @@ import {
   SignOutUserBody,
   GetIPLocationSuccessResponse,
 } from '@layers/api/auth/auth.types'
+import prisma from '@layers/database/db'
 
 export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: ServerResponse) => {
   validationResult(req).throw()
@@ -66,8 +67,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   const { email, password } = req.body
   const ipAddress = requestIp.getClientIp(req) || '::1'
 
-  const users = await getUserWithEmail({ email })
-  const user = users[0]
+  const user = await prisma.users.findFirst({ where: { email } })
 
   if (!user) {
     throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
@@ -95,7 +95,14 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
     ipLocation = `${ipData.country}, ${ipData.city}`
   }
 
-  await setUserRefreshToken({ userId, refreshToken, ipAddress, ipLocation })
+  await prisma.tokens.create({
+    data: {
+      user_id: userId,
+      refresh_token: refreshToken,
+      ip_address: ipAddress,
+      ip_location: ipLocation,
+    },
+  })
 
   res.json({
     success: true,
