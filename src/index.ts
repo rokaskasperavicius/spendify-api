@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
-import crypto from 'node:crypto'
 import cookieParser from 'cookie-parser'
 import 'dotenv/config'
 
@@ -94,6 +93,5 @@ app.use(
 // add mailsend for verifying emails
 
 app.listen(port, () => {
-  console.log(crypto.randomUUID())
   console.log(`⚡️ [server]: Server is running at http://localhost:${port}`)
 })

@@ -14,11 +14,11 @@ import express from 'express'
 import {
   loginUser,
   registerUser,
-  refreshUserToken,
   patchUserInfoHandler,
   patchUserPasswordHandler,
-  signOutUserHandler,
-  getUserDevicesHandler,
+  destroySessionHandler,
+  getUserSessionsHandler,
+  logOutHandler,
 } from '@layers/api/auth/auth.handlers'
 
 // Helpers
@@ -30,7 +30,7 @@ import {
   validateLoginUser,
   validatePatchUserInfo,
   validatePatchUserPassword,
-  validateSignOutUser,
+  validateDestroySession,
 } from '@layers/api/auth/auth.validators'
 
 const app = express.Router()
@@ -39,11 +39,10 @@ app.post('/register', validateRegisterUser, registerUser)
 
 app.post('/login', validateLoginUser, loginUser)
 
-app.post('/refresh-token', refreshUserToken)
+app.delete('/destroy-session', validateDestroySession, destroySessionHandler)
+app.post('/log-out', logOutHandler)
 
-app.delete('/sign-out', validateSignOutUser, signOutUserHandler)
-
-app.get('/devices', verifyUser, getUserDevicesHandler)
+app.get('/sessions', verifyUser, getUserSessionsHandler)
 
 app.patch('/user-info', verifyUser, validatePatchUserInfo, patchUserInfoHandler)
 app.patch('/user-password', verifyUser, validatePatchUserPassword, patchUserPasswordHandler)

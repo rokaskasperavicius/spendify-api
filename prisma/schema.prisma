@@ -18,13 +18,14 @@ model accounts {
   users        users?  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model tokens {
-  id            Int    @id @default(autoincrement())
+model sessions {
+  id            Int      @id @default(autoincrement())
   user_id       Int
-  refresh_token String
+  session_token String   @unique
+  expires_at    DateTime
   ip_address    String
   ip_location   String
-  users         users  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users         users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model users {
@@ -33,5 +34,5 @@ model users {
   email    String     @unique
   password String
   accounts accounts[]
-  tokens   tokens[]
+  tokens   sessions[]
 }

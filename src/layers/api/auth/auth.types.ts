@@ -19,7 +19,7 @@ export type LoginUserBody = {
 }
 
 export type SignOutUserBody = {
-  refreshToken: string
+  sessionId: string
 }
 
 export type PatchUserInfoBody = {

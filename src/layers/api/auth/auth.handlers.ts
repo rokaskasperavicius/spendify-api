@@ -9,24 +9,12 @@
 
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { v4 as uuid } from 'uuid'
+import crypto from 'node:crypto'
 import { validationResult } from 'express-validator'
 import requestIp from 'request-ip'
 
 // Helpers
-import {
-  getUserWithEmail,
-  getUserWithRefreshToken,
-  createUser,
-  updateUserRefreshToken,
-  getUserWithId,
-  patchUserInfo,
-  patchUserPassword,
-  setUserRefreshToken,
-  deleteUserRefreshToken,
-  getAllUserTokens,
-} from '@layers/database'
-import { createAccessToken } from '@layers/api/auth/auth.utils'
+import { getUserWithEmail, createUser, getUserWithId, patchUserInfo, patchUserPassword } from '@layers/database'
 
 // Types
 import { ServerError, ERROR_CODES, ServerRequest, ServerResponse } from '@global/types'
@@ -84,9 +72,6 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
     throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
-  const accessToken = createAccessToken({ userId })
-  const refreshToken = uuid()
-
   // Get IP location
   const { data: ipData } = await axios.get<GetIPLocationSuccessResponse>(`http://ip-api.com/json/${ipAddress}`)
 
@@ -96,23 +81,27 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
     ipLocation = `${ipData.country}, ${ipData.city}`
   }
 
-  await prisma.tokens.create({
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 1 week expiration
+  const sessionToken = crypto.randomUUID()
+
+  await prisma.sessions.create({
     data: {
       user_id: userId,
-      refresh_token: refreshToken,
+      expires_at: expiresAt,
+      session_token: sessionToken,
       ip_address: ipAddress,
       ip_location: ipLocation,
     },
   })
 
-  res.cookie('session', 'hello', {
+  res.cookie('session', sessionToken, {
     domain: NODE_ENV === 'production' ? 'spendify.dk' : 'localhost',
     path: '/',
     httpOnly: true,
     secure: true,
     signed: true,
     sameSite: 'strict',
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week expiration
+    expires: expiresAt,
   })
 
   res.json({
@@ -122,67 +111,58 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
         name,
         email,
       },
-
-      auth: {
-        accessToken,
-        refreshToken,
-      },
     },
   })
 }
 
-export const refreshUserToken = async (req: ServerRequest, res: ServerResponse) => {
-  const refreshToken = req.headers.authorization?.split(' ')[1]
-
-  if (!refreshToken) {
-    throw new ServerError(401)
-  }
-
-  const users = await getUserWithRefreshToken({ refreshToken })
-  const user = users[0]
-
-  if (!user) {
-    throw new ServerError(403)
-  }
-
-  const userId = user.user_id
-
-  const accessToken = createAccessToken({ userId })
-  const newRefreshToken = uuid()
-
-  await updateUserRefreshToken({ oldRefreshToken: refreshToken, newRefreshToken })
-
-  res.json({
-    success: true,
-    data: {
-      accessToken,
-      refreshToken: newRefreshToken,
-    },
-  })
-}
-
-export const signOutUserHandler = async (req: ServerRequest<SignOutUserBody>, res: ServerResponse) => {
+export const destroySessionHandler = async (req: ServerRequest<SignOutUserBody>, res: ServerResponse) => {
   validationResult(req).throw()
 
-  const { refreshToken } = req.body
+  const { sessionId } = req.body
 
-  await deleteUserRefreshToken({ refreshToken })
+  await prisma.sessions.deleteMany({
+    where: {
+      session_token: sessionId,
+    },
+  })
 
   res.json({
     success: true,
   })
 }
 
-export const getUserDevicesHandler = async (req: ServerRequest, res: ServerResponse) => {
-  const userId = res.locals.userId
+export const logOutHandler = async (req: ServerRequest, res: ServerResponse) => {
+  const sessionToken = req.signedCookies.session
 
-  const devices = await getAllUserTokens({ userId })
+  await prisma.sessions.deleteMany({
+    where: {
+      session_token: sessionToken,
+    },
+  })
+
+  res.clearCookie('session')
+
+  res.json({
+    success: true,
+  })
+}
+
+export const getUserSessionsHandler = async (req: ServerRequest, res: ServerResponse) => {
+  const userId = res.locals.userId
+  const sessionToken = req.signedCookies.session
+
+  const devices = await prisma.sessions.findMany({
+    where: {
+      user_id: userId,
+    },
+  })
 
   res.json({
     success: true,
 
-    data: devices.map(({ refresh_token, ip_address, ip_location }) => ({
-      refreshToken: refresh_token,
+    data: devices.map(({ session_token, ip_address, ip_location }) => ({
+      isCurrent: session_token === sessionToken,
+      sessionId: session_token,
       ipAddress: ip_address,
       ipLocation: ip_location,
     })),

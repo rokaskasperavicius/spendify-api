@@ -30,7 +30,7 @@ export const validateRegisterUser = [
   body('password').custom((password) => passwordSchema.validate(password)),
 ]
 
-export const validateSignOutUser = [body('refreshToken').isString()]
+export const validateDestroySession = [body('sessionId').isString()]
 
 export const validatePatchUserInfo = [body('name').isString(), body('email').isEmail()]
 

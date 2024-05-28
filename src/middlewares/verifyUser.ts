@@ -1,26 +1,31 @@
 import { NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
 
 // Types
 import { ServerError, ServerRequest, ServerResponse } from '@global/types'
 
 // Constants
-import { JWT_ACCESS_SECRET_KEY } from '@global/constants'
+import prisma from '@layers/database/db'
 
 export const verifyUser = async (req: ServerRequest, res: ServerResponse, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1]
+  const sessionToken = req.signedCookies.session as string | undefined
 
-  if (!token) {
+  if (!sessionToken) {
     throw new ServerError(401)
   }
 
-  try {
-    const tokenInfo = jwt.verify(token, JWT_ACCESS_SECRET_KEY) as jwt.JwtPayload
+  const session = await prisma.sessions.findFirst({
+    where: {
+      session_token: sessionToken,
+      expires_at: {
+        gt: new Date(),
+      },
+    },
+  })
 
-    res.locals.userId = tokenInfo.id
-
-    next()
-  } catch (err) {
+  if (!session) {
     throw new ServerError(401)
   }
+
+  res.locals.userId = session.user_id
+  next()
 }

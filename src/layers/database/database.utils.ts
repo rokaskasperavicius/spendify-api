@@ -36,42 +36,6 @@ export const createUser = ({ name, email, password }: CreateUserBody) =>
     [name, email, password]
   )
 
-export const setUserRefreshToken = ({ userId, refreshToken, ipAddress, ipLocation }: SetUserRefreshTokenBody) =>
-  db(
-    `INSERT INTO
-      tokens(user_id, refresh_token, ip_address, ip_location)
-      VALUES($1, $2, $3, $4)
-    `,
-    [userId, refreshToken, ipAddress, ipLocation]
-  )
-
-export const updateUserRefreshToken = ({ oldRefreshToken, newRefreshToken }: UpdateUserRefreshTokenBody) =>
-  db(
-    `UPDATE tokens
-      SET refresh_token = $2
-      WHERE refresh_token = $1
-    `,
-    [oldRefreshToken, newRefreshToken]
-  )
-
-export const getAllUserTokens = ({ userId }: GetAllUserTokensBody) =>
-  db<GetAllUserTokensResponse>(
-    `SELECT refresh_token, ip_address, ip_location
-      FROM tokens
-      WHERE user_id = $1
-    `,
-    [userId]
-  )
-
-export const deleteUserRefreshToken = ({ refreshToken }: DeleteUserRefreshTokenBody) =>
-  db(
-    `DELETE
-      from tokens
-      WHERE refresh_token = $1
-    `,
-    [refreshToken]
-  )
-
 export const getUserWithEmail = ({ email }: GetUserWithEmailBody) =>
   db<GetUserWithEmailResponse>(
     `SELECT
