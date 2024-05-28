@@ -39,6 +39,7 @@ import {
   GetIPLocationSuccessResponse,
 } from '@layers/api/auth/auth.types'
 import prisma from '@layers/database/db'
+import { NODE_ENV } from '@global/constants'
 
 export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: ServerResponse) => {
   validationResult(req).throw()
@@ -102,6 +103,16 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
       ip_address: ipAddress,
       ip_location: ipLocation,
     },
+  })
+
+  res.cookie('session', 'hello', {
+    domain: NODE_ENV === 'production' ? 'spendify.dk' : 'localhost',
+    path: '/',
+    httpOnly: true,
+    secure: true,
+    signed: true,
+    sameSite: 'strict',
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week expiration
   })
 
   res.json({

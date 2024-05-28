@@ -2,17 +2,17 @@ import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import crypto from 'node:crypto'
+import cookieParser from 'cookie-parser'
 import 'dotenv/config'
 
-// Routes
 import apiRoutes from '@layers/api'
-
-// Types
 import { ERROR_CODES, ServerError } from '@global/types'
+import { COOKIE_SECRET } from '@global/constants'
 
 // Setup
 const app = express()
 app.use(express.json())
+app.use(cookieParser(COOKIE_SECRET))
 
 const port = process.env.PORT || 8080
 
@@ -26,6 +26,7 @@ const corsOptions = {
     'https://spendify-client.vercel.app',
     'https://www.spendify.dk',
   ],
+  credentials: true,
   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
