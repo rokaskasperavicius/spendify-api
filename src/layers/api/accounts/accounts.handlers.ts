@@ -1,51 +1,45 @@
-import { validationResult } from 'express-validator'
-import currency from 'currency.js'
-import fuzzysort from 'fuzzysort'
-import { startOfDay, endOfDay, format } from 'date-fns'
-import { v4 as uuid } from 'uuid'
 import { faker } from '@faker-js/faker'
+import { isAxiosError } from 'axios'
+import currency from 'currency.js'
+import { endOfDay, format, startOfDay } from 'date-fns'
+import { validationResult } from 'express-validator'
+import fuzzysort from 'fuzzysort'
+import { StatusCodes } from 'http-status-codes'
 import groupBy from 'lodash/groupBy'
+import { v4 as uuid } from 'uuid'
 
-// Helpers
-import {
-  getNordigenInstitutions,
-  getNordigenAccountTransactions,
-  getNordigenAccountMeta,
-  getNordigenInstitution,
-  getNordigenAccountBalances,
-  getNordigenAccountDetails,
-  getNordigenRequisitions,
-  createNordigenAgreement,
-  createNordigenRequisition,
-} from '@layers/nordigen/nordigen.utils'
+import { FORMATTED_CURRENCY, NORDIGEN_CURRENCY } from '@/global/constants'
+import { ServerError, ServerRequest, ServerResponse } from '@/global/types'
 
 import {
-  getUserAccountWithAccountId,
-  getUserAccounts,
-  createUserAccount,
-  deleteUserAccount,
-} from '@layers/database/database.utils'
-
-// Types
-import { ServerError, ServerRequest, ServerResponse } from '@global/types'
-import {
+  CreateAccountBody,
   CreateAccountRequisitionBody,
-  GetAvailableAccountsParams,
+  DeleteAccountBody,
+  GetAccountInstitutionsReq,
+  GetAccountTransactionsGroupedParams,
   GetAccountTransactionsParams,
   GetAccountTransactionsQuery,
-  GetAccountTransactionsGroupedParams,
-  CreateAccountBody,
-  DeleteAccountBody,
+  GetAvailableAccountsParams,
   ReducedGroupedTransactions,
-  GetAccountInstitutionsReq,
-} from '@layers/api/accounts/accounts.types'
-
-// Constants
-import { MOCKED_USER_ID, NORDIGEN_CURRENCY, FORMATTED_CURRENCY } from '@global/constants'
-
-// Mocks
-import { mockedTransactions } from '@mocks/mockedTransactions'
-import { isAxiosError } from 'axios'
+} from '@/layers/api/accounts/accounts.types'
+import {
+  createUserAccount,
+  deleteUserAccount,
+  getUserAccountWithAccountId,
+  getUserAccounts,
+} from '@/layers/database/database.utils'
+import prisma from '@/layers/database/db'
+import {
+  createNordigenAgreement,
+  createNordigenRequisition,
+  getNordigenAccountBalances,
+  getNordigenAccountDetails,
+  getNordigenAccountMeta,
+  getNordigenAccountTransactions,
+  getNordigenInstitution,
+  getNordigenInstitutions,
+  getNordigenRequisitions,
+} from '@/layers/nordigen/nordigen.utils'
 
 const nordigenCurrency = (value: string) => currency(value, NORDIGEN_CURRENCY)
 
@@ -75,22 +69,6 @@ export const createAccountRequisition = async (
   validationResult(req).throw()
 
   const { institutionId, redirect } = req.body
-
-  // MOCKED
-
-  if (res.locals.userId === MOCKED_USER_ID) {
-    res.json({
-      success: true,
-
-      data: {
-        url: `${redirect}?ref=${uuid()}`,
-      },
-    })
-
-    return
-  }
-
-  // MOCKED
 
   const { data: bankInfo } = await getNordigenInstitution({ institutionId })
 
@@ -122,28 +100,6 @@ export const getAvailableAccounts = async (
 
   const { requisitionId } = req.params
 
-  // MOCKED
-
-  if (res.locals.userId === MOCKED_USER_ID) {
-    res.json({
-      success: true,
-
-      data: [
-        {
-          accountId: '40204295-8519-4594-a07a-4cc40a8e0952',
-          accountName: 'Fake Account',
-          accountIban: 'DK7050516477944871',
-          accountBalance: '20.000,00',
-          bankLogo: 'https://cdn.nordigen.com/ais/DANSKEBANK_BUSINESS_DABADKKK.png',
-        },
-      ],
-    })
-
-    return
-  }
-
-  // MOCKED
-
   const { data } = await getNordigenRequisitions({ requisitionId })
 
   const accounts = []
@@ -173,31 +129,6 @@ export const getAvailableAccounts = async (
 export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
   const data = await getUserAccounts({ userId: res.locals.userId })
 
-  // MOCKED
-  if (res.locals.userId === MOCKED_USER_ID) {
-    const mockedAccounts = []
-
-    for (const account of data) {
-      mockedAccounts.push({
-        accountId: account.account_id,
-        accountBalance: '20.000,00',
-        accountName: account.account_name,
-        accountIban: account.account_iban,
-        bankName: account.bank_name,
-        bankLogo: account.bank_logo,
-      })
-    }
-
-    res.json({
-      success: true,
-
-      data: mockedAccounts,
-    })
-
-    return
-  }
-  // MOCKED
-
   const accounts = []
   let someExpired = false
   let accountId
@@ -225,8 +156,16 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
       if (accountId && typeof detail === 'string' && detail?.includes('expired')) {
         someExpired = true
 
-        // Remove it from the system
-        await deleteUserAccount({ userId: res.locals.userId, accountId })
+        // Remove it from the system???
+        await prisma.accounts.deleteMany({
+          where: {
+            account_id: accountId,
+
+            AND: {
+              user_id: res.locals.userId,
+            },
+          },
+        })
         accountId = undefined
       }
     }
@@ -245,41 +184,21 @@ export const createAccount = async (req: ServerRequest<CreateAccountBody>, res: 
   validationResult(req).throw()
 
   const { accountId } = req.body
-
   const { userId } = res.locals
-
-  // MOCKED
-
-  if (userId === MOCKED_USER_ID) {
-    await createUserAccount({
-      userId,
-      accountId,
-      accountName: 'Studiekonto',
-      accountIban: faker.finance.iban(true, 'DK'),
-      bankName: 'Fake Bank',
-      bankLogo: 'https://cdn.nordigen.com/ais/DANSKEBANK_BUSINESS_DABADKKK.png',
-    })
-
-    res.json({
-      success: true,
-    })
-
-    return
-  }
-
-  // MOCKED
 
   const { data: accountDetails } = await getNordigenAccountDetails({ accountId })
   const { data: accountMeta } = await getNordigenAccountMeta({ accountId })
   const { data: bankInfo } = await getNordigenInstitution({ institutionId: accountMeta.institution_id })
 
-  await createUserAccount({
-    userId,
-    accountId,
-    accountName: accountDetails.account.name,
-    accountIban: accountDetails.account.iban,
-    bankName: bankInfo.name,
-    bankLogo: bankInfo.logo,
+  await prisma.accounts.create({
+    data: {
+      user_id: userId,
+      account_id: accountId,
+      account_name: accountDetails.account.name,
+      account_iban: accountDetails.account.iban,
+      bank_name: bankInfo.name,
+      bank_logo: bankInfo.logo,
+    },
   })
 
   res.json({
@@ -294,45 +213,26 @@ export const getAccountTransactions = async (
   validationResult(req).throw()
 
   const { accountId } = req.params
-  const { search, category, intervals } = req.query
+  const { search, category, from, to } = req.query
 
-  // MOCKED
-  const isMock = res.locals.userId === MOCKED_USER_ID
-
-  const mockedTransactionsObject = {
-    data: mockedTransactions,
-  }
-
-  const mockedCurrentBalance = '20000.00'
-  const mockedBalanceObject = {
-    data: {
-      balances: [
-        {
-          balanceAmount: {
-            amount: mockedCurrentBalance,
-          },
-        },
-      ],
+  const account = await prisma.accounts.findFirst({
+    where: {
+      account_id: accountId,
+      AND: {
+        user_id: res.locals.userId,
+      },
     },
-  }
-  // MOCKED
-
-  const accounts = await getUserAccountWithAccountId({ userId: res.locals.userId, accountId })
-  const account = accounts[0]
+  })
 
   if (!account) {
-    throw new ServerError(403)
+    throw new ServerError(StatusCodes.BAD_REQUEST)
   }
 
-  const { data: transactionsInfo } = !isMock
-    ? await getNordigenAccountTransactions({
-        accountId: account.account_id,
-      })
-    : mockedTransactionsObject
+  const { data: transactionsInfo } = await getNordigenAccountTransactions({
+    accountId: account.account_id,
+  })
 
-  const { data: balances } = !isMock
-    ? await getNordigenAccountBalances({ accountId: account.account_id })
-    : mockedBalanceObject
+  const { data: balances } = await getNordigenAccountBalances({ accountId: account.account_id })
 
   const transactions = transactionsInfo.transactions.booked
   let currentBalance = balances.balances[0].balanceAmount.amount
@@ -368,69 +268,60 @@ export const getAccountTransactions = async (
     ? fuzzysort.go(search, mappedTransactions, { key: 'title', threshold: -400 }).map((search) => search.obj)
     : mappedTransactions
 
-  const intervalizedTransactions: { id: string; transactions: Array<object> }[] = []
+  let intervalizedTransaction = mappedTransactions.filter((transaction) => {
+    const transactionDate = transaction.date
+    const fromDate = startOfDay(new Date(parseInt(from))).getTime()
+    const endDate = endOfDay(new Date(parseInt(to))).getTime()
 
-  for (const interval of intervals) {
-    let intervalizedTransaction = mappedTransactions.filter((transaction) => {
-      const transactionDate = transaction.date
-      const fromDate = startOfDay(new Date(parseInt(interval.from))).getTime()
-      const endDate = endOfDay(new Date(parseInt(interval.to))).getTime()
+    return transactionDate >= fromDate && transactionDate <= endDate
+  })
 
-      return transactionDate >= fromDate && transactionDate <= endDate
-    })
+  const rules = [
+    // Food & Groceries
+    { pattern: /rema|rema1000/i, category: 'Food & Groceries' },
+    { pattern: /fakta/i, category: 'Food & Groceries' },
+    { pattern: /kvickly/i, category: 'Food & Groceries' },
+    { pattern: /superbrugsen/i, category: 'Food & Groceries' },
+    { pattern: /coop/i, category: 'Food & Groceries' },
+    { pattern: /irma/i, category: 'Food & Groceries' },
+    { pattern: /aldi/i, category: 'Food & Groceries' },
+    { pattern: /lidl/i, category: 'Food & Groceries' },
+    { pattern: /bilka/i, category: 'Food & Groceries' },
+    { pattern: /økomarket/i, category: 'Food & Groceries' },
+    { pattern: /netto/i, category: 'Food & Groceries' },
+    { pattern: /meny/i, category: 'Food & Groceries' },
+    { pattern: /føtex|foetex/i, category: 'Food & Groceries' },
+    { pattern: /7-eleven/i, category: 'Food & Groceries' },
+    { pattern: /wolt/i, category: 'Food & Groceries' },
+    { pattern: /just eat/i, category: 'Food & Groceries' },
+    { pattern: /kiosk/i, category: 'Food & Groceries' },
+    { pattern: /cafeteria/i, category: 'Food & Groceries' },
+    { pattern: /bakery/i, category: 'Food & Groceries' },
 
-    const rules = [
-      // Food & Groceries
-      { pattern: /rema|rema1000/i, category: 'Food & Groceries' },
-      { pattern: /fakta/i, category: 'Food & Groceries' },
-      { pattern: /kvickly/i, category: 'Food & Groceries' },
-      { pattern: /superbrugsen/i, category: 'Food & Groceries' },
-      { pattern: /coop/i, category: 'Food & Groceries' },
-      { pattern: /irma/i, category: 'Food & Groceries' },
-      { pattern: /aldi/i, category: 'Food & Groceries' },
-      { pattern: /lidl/i, category: 'Food & Groceries' },
-      { pattern: /bilka/i, category: 'Food & Groceries' },
-      { pattern: /økomarket/i, category: 'Food & Groceries' },
-      { pattern: /netto/i, category: 'Food & Groceries' },
-      { pattern: /meny/i, category: 'Food & Groceries' },
-      { pattern: /føtex|foetex/i, category: 'Food & Groceries' },
-      { pattern: /7-eleven/i, category: 'Food & Groceries' },
-      { pattern: /wolt/i, category: 'Food & Groceries' },
-      { pattern: /just eat/i, category: 'Food & Groceries' },
-      { pattern: /kiosk/i, category: 'Food & Groceries' },
-      { pattern: /cafeteria/i, category: 'Food & Groceries' },
-      { pattern: /bakery/i, category: 'Food & Groceries' },
+    // Transfers
+    { pattern: /\boverførsel\b/i, category: 'Transfers' }, // lønoverførsel belongs to Utilities
+    { pattern: /mobilepay/i, category: 'Transfers' },
 
-      // Transfers
-      { pattern: /\boverførsel\b/i, category: 'Transfers' }, // lønoverførsel belongs to Utilities
-      { pattern: /mobilepay/i, category: 'Transfers' },
+    // Everything else belongs to Utilities
+  ]
 
-      // Everything else belongs to Utilities
-    ]
+  // Apply categories
+  intervalizedTransaction = intervalizedTransaction.map((transaction) => {
+    const rule = rules.find((rule) => transaction.title.match(rule.pattern))
 
-    // Apply categories
-    intervalizedTransaction = intervalizedTransaction.map((transaction) => {
-      const rule = rules.find((rule) => transaction.title.match(rule.pattern))
+    return {
+      ...transaction,
+      category: rule?.category || 'Utilities',
+    }
+  })
 
-      return {
-        ...transaction,
-        category: rule?.category || 'Utilities',
-      }
-    })
-
-    intervalizedTransaction = intervalizedTransaction.filter(
-      (transaction) => !category || transaction.category === category
-    )
-
-    intervalizedTransactions.push({
-      id: interval.id,
-      transactions: intervalizedTransaction.sort((prev, next) => prev.weight - next.weight),
-    })
-  }
+  intervalizedTransaction = intervalizedTransaction.filter(
+    (transaction) => !category || transaction.category === category
+  )
 
   res.json({
     success: true,
-    data: intervalizedTransactions,
+    data: intervalizedTransaction.sort((prev, next) => prev.weight - next.weight),
   })
 }
 
@@ -442,13 +333,6 @@ export const getAccountTransactionsGroupedHandler = async (
 
   const { accountId } = req.params
 
-  // MOCKED
-  const isMock = res.locals.userId === MOCKED_USER_ID
-  const mockedTransactionsObject = {
-    data: mockedTransactions,
-  }
-  // MOCKED
-
   const accounts = await getUserAccountWithAccountId({ userId: res.locals.userId, accountId })
   const account = accounts[0]
 
@@ -456,11 +340,9 @@ export const getAccountTransactionsGroupedHandler = async (
     throw new ServerError(403)
   }
 
-  const { data: transactionsInfo } = !isMock
-    ? await getNordigenAccountTransactions({
-        accountId: account.account_id,
-      })
-    : mockedTransactionsObject
+  const { data: transactionsInfo } = await getNordigenAccountTransactions({
+    accountId: account.account_id,
+  })
 
   const transactions = transactionsInfo.transactions.booked
 
@@ -510,7 +392,14 @@ export const deleteAccountHandler = async (req: ServerRequest<DeleteAccountBody>
   const { userId } = res.locals
   const { accountId } = req.body
 
-  await deleteUserAccount({ userId, accountId })
+  await prisma.accounts.deleteMany({
+    where: {
+      account_id: accountId,
+      AND: {
+        user_id: userId,
+      },
+    },
+  })
 
   res.json({
     success: true,

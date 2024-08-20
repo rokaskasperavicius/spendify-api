@@ -1,12 +1,14 @@
-import express, { Request, Response, NextFunction } from 'express'
-import cors from 'cors'
-import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import 'dotenv/config'
+import express, { NextFunction, Request, Response } from 'express'
+import rateLimit from 'express-rate-limit'
+import { StatusCodes } from 'http-status-codes'
 
-import apiRoutes from '@layers/api'
-import { ERROR_CODES, ServerError } from '@global/types'
-import { COOKIE_SECRET } from '@global/constants'
+import { COOKIE_SECRET, NODE_ENV } from '@/global/constants'
+import { ERROR_CODES, ServerError } from '@/global/types'
+
+import apiRoutes from '@/layers/api'
 
 // Setup
 const app = express()
@@ -45,7 +47,7 @@ app.get('/', async (req, res) => {
   res.send('Spendify API')
 })
 
-app.use('/api', apiRoutes)
+app.use('/v1', apiRoutes)
 
 app.use(
   (
@@ -55,8 +57,7 @@ app.use(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     next: NextFunction
   ) => {
-    console.log(error)
-    let status = 500
+    let status = StatusCodes.INTERNAL_SERVER_ERROR
     let code: ERROR_CODES = -1
 
     if (error instanceof ServerError) {
@@ -66,7 +67,7 @@ app.use(
 
     let message = error.message
 
-    if (process.env.NODE_ENV === 'production') {
+    if (NODE_ENV === 'production') {
       message = 'Something went wrong'
     }
 

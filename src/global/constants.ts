@@ -11,9 +11,6 @@ export const NORDIGEN_COUNTRY = process.env.NORDIGEN_COUNTRY as string
 export const NORDIGEN_ACCESS_VALID_FOR_DAYS = 90
 export const NORDIGEN_ACCESS_SCOPE = ['balances', 'details', 'transactions']
 
-// Mocked Data
-export const MOCKED_USER_ID = 16
-
 // Other
 export const NORDIGEN_CURRENCY = { symbol: '', separator: '', decimal: '.' }
 export const FORMATTED_CURRENCY = { symbol: '', decimal: ',', separator: '.' }

@@ -26,11 +26,8 @@ export type GetAccountTransactionsParams = {
 export type GetAccountTransactionsQuery = {
   search?: string
   category?: 'Food & Groceries' | 'Utilities' | 'Transfers'
-  intervals: Array<{
-    id: string
-    from: string
-    to: string
-  }>
+  from: string
+  to: string
 }
 
 export type GetAccountTransactionsGroupedParams = {

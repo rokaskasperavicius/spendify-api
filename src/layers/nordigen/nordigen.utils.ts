@@ -1,28 +1,24 @@
-// Helpers
-import { nordigenApi } from '@layers/nordigen/nordigen.api'
+import { NORDIGEN_ACCESS_SCOPE, NORDIGEN_ACCESS_VALID_FOR_DAYS, NORDIGEN_COUNTRY } from '@/global/constants'
 
-// Constants
-import { NORDIGEN_ACCESS_VALID_FOR_DAYS, NORDIGEN_ACCESS_SCOPE, NORDIGEN_COUNTRY } from '@global/constants'
-
-// Types
+import { nordigenApi } from '@/layers/nordigen/nordigen.api'
 import {
-  CreateNordigenAgreementResponse,
   CreateNordigenAgreementBody,
-  CreateNordigenRequisitionResponse,
+  CreateNordigenAgreementResponse,
   CreateNordigenRequisitionBody,
-  GetNordigenAccountBalancesResponse,
+  CreateNordigenRequisitionResponse,
   GetNordigenAccountBalancesBody,
-  GetNordigenAccountDetailsResponse,
+  GetNordigenAccountBalancesResponse,
   GetNordigenAccountDetailsBody,
-  GetNordigenAccountMetaResponse,
+  GetNordigenAccountDetailsResponse,
   GetNordigenAccountMetaBody,
-  GetNordigenAccountTransactionsResponse,
+  GetNordigenAccountMetaResponse,
   GetNordigenAccountTransactionsBody,
-  GetNordigenInstitutionResponse,
+  GetNordigenAccountTransactionsResponse,
   GetNordigenInstitutionBody,
-  GetNordigenRequisitionResponse,
+  GetNordigenInstitutionResponse,
   GetNordigenRequisitionBody,
-} from '@layers/nordigen/nordigen.types'
+  GetNordigenRequisitionResponse,
+} from '@/layers/nordigen/nordigen.types'
 
 export const createNordigenAgreement = ({ institutionId, maxHistoricalDays }: CreateNordigenAgreementBody) =>
   nordigenApi.post<CreateNordigenAgreementResponse>('/agreements/enduser/', {

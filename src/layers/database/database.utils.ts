@@ -1,31 +1,29 @@
 // Helpers
-import { db } from '@layers/database/db'
-
+import { ERROR_CODES, ServerError } from '@global/types'
 // Types
 import {
+  CreateUserAccountBody,
   CreateUserBody,
-  UpdateUserRefreshTokenBody,
-  GetUserWithEmailBody,
-  GetUserWithEmailResponse,
-  GetUserWithRefreshTokenBody,
-  GetUserWithRefreshTokenResponse,
+  DeleteUserAccountBody,
+  DeleteUserRefreshTokenBody,
+  GetAllUserTokensBody,
+  GetAllUserTokensResponse,
   GetUserAccountWithAccountIdBody,
   GetUserAccountWithAccountIdResponse,
   GetUserAccountsBody,
   GetUserAccountsResponse,
-  CreateUserAccountBody,
+  GetUserWithEmailBody,
+  GetUserWithEmailResponse,
   GetUserWithIdBody,
   GetUserWithIdResponse,
+  GetUserWithRefreshTokenBody,
+  GetUserWithRefreshTokenResponse,
   PatchUserInfoBody,
   PatchUserPasswordBody,
-  DeleteUserAccountBody,
   SetUserRefreshTokenBody,
-  DeleteUserRefreshTokenBody,
-  GetAllUserTokensBody,
-  GetAllUserTokensResponse,
+  UpdateUserRefreshTokenBody,
 } from '@layers/database/database.types'
-
-import { ServerError, ERROR_CODES } from '@global/types'
+import { db } from '@layers/database/db'
 
 export const createUser = ({ name, email, password }: CreateUserBody) =>
   db(

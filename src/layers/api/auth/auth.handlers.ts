@@ -6,44 +6,46 @@
 | Here you define all of the handlers for the auth routes
 |
 */
-
-import bcrypt from 'bcrypt'
 import axios from 'axios'
-import crypto from 'node:crypto'
+import bcrypt from 'bcrypt'
 import { validationResult } from 'express-validator'
+import { StatusCodes } from 'http-status-codes'
+import crypto from 'node:crypto'
 import requestIp from 'request-ip'
 
-// Helpers
-import { getUserWithEmail, createUser, getUserWithId, patchUserInfo, patchUserPassword } from '@layers/database'
+import { NODE_ENV } from '@/global/constants'
+import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/global/types'
 
-// Types
-import { ServerError, ERROR_CODES, ServerRequest, ServerResponse } from '@global/types'
 import {
-  RegisterUserBody,
+  GetIPLocationSuccessResponse,
   LoginUserBody,
   PatchUserInfoBody,
   PatchUserPasswordBody,
+  RegisterUserBody,
   SignOutUserBody,
-  GetIPLocationSuccessResponse,
-} from '@layers/api/auth/auth.types'
-import prisma from '@layers/database/db'
-import { NODE_ENV } from '@global/constants'
+} from '@/layers/api/auth/auth.types'
+import prisma from '@/layers/database/db'
 
 export const registerUser = async (req: ServerRequest<RegisterUserBody>, res: ServerResponse) => {
   validationResult(req).throw()
 
   const { name, email, password } = req.body
 
-  const users = await getUserWithEmail({ email })
-  const user = users[0]
+  const user = await prisma.users.findFirst({ where: { email } })
 
   if (user) {
-    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
   const hashedPassword = await bcrypt.hash(password, 12)
 
-  await createUser({ name, email, password: hashedPassword })
+  await prisma.users.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+    },
+  })
 
   res.json({
     success: true,
@@ -59,7 +61,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   const user = await prisma.users.findFirst({ where: { email } })
 
   if (!user) {
-    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.BAD_REQUEST, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
   const userPassword = user.password
@@ -69,7 +71,7 @@ export const loginUser = async (req: ServerRequest<LoginUserBody>, res: ServerRe
   const isPasswordOk = userPassword ? await bcrypt.compare(password, userPassword) : false
 
   if (!isPasswordOk) {
-    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.BAD_REQUEST, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
   // Get IP location
@@ -175,15 +177,20 @@ export const patchUserInfoHandler = async (req: ServerRequest<PatchUserInfoBody>
   const userId = res.locals.userId
   const { name, email } = req.body
 
-  const users = await getUserWithEmail({ email })
-  const user = users[0]
+  const user = await prisma.users.findFirst({ where: { email } })
 
   // User with that email already exists
   if (user && userId !== user.id) {
-    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
-  await patchUserInfo({ userId, name, email })
+  await prisma.users.update({
+    where: { id: userId },
+    data: {
+      name,
+      email,
+    },
+  })
 
   res.json({
     success: true,
@@ -200,18 +207,26 @@ export const patchUserPasswordHandler = async (req: ServerRequest<PatchUserPassw
   const userId = res.locals.userId
   const { oldPassword, newPassword } = req.body
 
-  const users = await getUserWithId({ id: userId })
-  const user = users[0]
+  const user = await prisma.users.findFirst({ where: { id: userId } })
+
+  if (!user) {
+    throw new ServerError(StatusCodes.BAD_REQUEST)
+  }
 
   const isPasswordOk = await bcrypt.compare(oldPassword, user.password)
 
   if (!isPasswordOk) {
-    throw new ServerError(400, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.BAD_REQUEST, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 12)
 
-  await patchUserPassword({ userId, password: hashedPassword })
+  await prisma.users.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+    },
+  })
 
   res.json({
     success: true,

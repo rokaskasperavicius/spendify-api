@@ -6,7 +6,6 @@
 | Here you define all of the validators functions for the auth endpoint
 |
 */
-
 import { body } from 'express-validator'
 import passwordValidator from 'password-validator'
 

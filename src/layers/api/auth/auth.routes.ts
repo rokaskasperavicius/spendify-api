@@ -6,32 +6,28 @@
 | Here you define all of the routes for the auth endpoint
 |
 */
-
-import 'express-async-errors'
 import express from 'express'
+import 'express-async-errors'
+import { validateRequest } from 'zod-express-middleware'
 
-// Handlers
 import {
-  loginUser,
-  registerUser,
-  patchUserInfoHandler,
-  patchUserPasswordHandler,
   destroySessionHandler,
   getUserSessionsHandler,
   logOutHandler,
-} from '@layers/api/auth/auth.handlers'
-
-// Helpers
-import { verifyUser } from '@middlewares'
-
-// Validators
+  loginUser,
+  patchUserInfoHandler,
+  patchUserPasswordHandler,
+  registerUser,
+} from '@/layers/api/auth/auth.handlers'
 import {
-  validateRegisterUser,
+  validateDestroySession,
   validateLoginUser,
   validatePatchUserInfo,
   validatePatchUserPassword,
-  validateDestroySession,
-} from '@layers/api/auth/auth.validators'
+  validateRegisterUser,
+} from '@/layers/api/auth/auth.validators'
+
+import { verifyUser } from '@/middlewares'
 
 const app = express.Router()
 

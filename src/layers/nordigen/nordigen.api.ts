@@ -1,13 +1,9 @@
 import axios, { AxiosError } from 'axios'
 
-// Helpers
-import nordigenTokens from '@layers/nordigen/nordigen.tokens'
+import { NORDIGEN_BASE_URL, NORDIGEN_SECRET_ID, NORDIGEN_SECRET_KEY } from '@/global/constants'
 
-// Constants
-import { NORDIGEN_BASE_URL, NORDIGEN_SECRET_ID, NORDIGEN_SECRET_KEY } from '@global/constants'
-
-// Types
-import { CreatedNordigenToken } from '@layers/nordigen/nordigen.types'
+import nordigenTokens from '@/layers/nordigen/nordigen.tokens'
+import { CreatedNordigenToken } from '@/layers/nordigen/nordigen.types'
 
 const nordigenApi = axios.create({
   baseURL: NORDIGEN_BASE_URL,

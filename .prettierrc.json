@@ -1,7 +1,21 @@
 {
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
   "tabWidth": 2,
   "singleQuote": true,
   "jsxSingleQuote": true,
   "semi": false,
-  "printWidth": 120
+  "printWidth": 120,
+  "importOrder": [
+    "^@/global/(.*)$",
+    "^@/global",
+    "^@/config/(.*)$",
+    "^@/config",
+    "^@/layers/(.*)$",
+    "^@/layers",
+    "^@/middlewares/(.*)$",
+    "^@/middlewares",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }
