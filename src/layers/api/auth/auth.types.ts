@@ -18,6 +18,7 @@ export type LoginUserBody = {
   password: string
 }
 
+
 export type SignOutUserBody = {
   sessionId: string
 }
