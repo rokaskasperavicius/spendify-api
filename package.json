@@ -6,7 +6,9 @@
   "scripts": {
     "start": "ts-node --transpileOnly -r tsconfig-paths/register src/index.ts",
     "dev": "npm run dotenv-pull && ts-node-dev -r tsconfig-paths/register src/index.ts",
-    "dotenv-pull": "npx dotenv-vault@latest pull"
+    "dotenv-pull": "npx dotenv-vault@latest pull",
+    "eslint": "eslint . --max-warnings 0",
+    "tsc": "tsc --noEmit"
   },
   "engines": {
     "node": "18.16.1"
@@ -60,6 +62,6 @@
     "prettier": "2.8.4",
     "prisma": "^5.14.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^4.9.5"
+    "typescript": "^5.5.4"
   }
 }
