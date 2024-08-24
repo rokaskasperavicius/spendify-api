@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node --transpileOnly -r tsconfig-paths/register src/index.ts",
-    "dev": "ts-node-dev -r tsconfig-paths/register src/index.ts"
+    "dev": "npm run dotenv-pull && ts-node-dev -r tsconfig-paths/register src/index.ts",
+    "dotenv-pull": "npx dotenv-vault@latest pull"
   },
   "engines": {
     "node": "18.16.1"
