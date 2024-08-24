@@ -14,7 +14,7 @@ export type CreateNordigenAgreementResponse = {
 
 export type CreateNordigenAgreementBody = {
   institutionId: string
-  maxHistoricalDays: string
+  maxHistoricalDays: number
 }
 
 export type CreateNordigenRequisitionResponse = {

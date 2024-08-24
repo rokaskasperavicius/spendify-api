@@ -1,5 +1,6 @@
 // Helpers
-import { ERROR_CODES, ServerError } from '@global/types'
+import { ERROR_CODES, ServerError } from '@/global/types'
+
 // Types
 import {
   CreateUserAccountBody,
@@ -22,8 +23,9 @@ import {
   PatchUserPasswordBody,
   SetUserRefreshTokenBody,
   UpdateUserRefreshTokenBody,
-} from '@layers/database/database.types'
-import { db } from '@layers/database/db'
+} from '@/layers/database/database.types'
+
+// import { db } from '@/layers/database/db'
 
 export const createUser = ({ name, email, password }: CreateUserBody) =>
   db(

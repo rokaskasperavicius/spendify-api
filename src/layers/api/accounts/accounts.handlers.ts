@@ -8,8 +8,14 @@ import { StatusCodes } from 'http-status-codes'
 import groupBy from 'lodash/groupBy'
 import { v4 as uuid } from 'uuid'
 
-import { FORMATTED_CURRENCY, NORDIGEN_CURRENCY } from '@/global/constants'
+import {
+  FORMATTED_CURRENCY,
+  NORDIGEN_ACCESS_SCOPE,
+  NORDIGEN_ACCESS_VALID_FOR_DAYS,
+  NORDIGEN_CURRENCY,
+} from '@/global/constants'
 import { ServerError, ServerRequest, ServerResponse } from '@/global/types'
+import { dkk } from '@/global/utils'
 
 import {
   CreateAccountBody,
@@ -32,13 +38,17 @@ import prisma from '@/layers/database/db'
 import {
   createNordigenAgreement,
   createNordigenRequisition,
+  getAccountBalanceById,
+  getAccountDetailsById,
+  getAccountMetadata,
+  getInstitutionById,
   getNordigenAccountBalances,
   getNordigenAccountDetails,
   getNordigenAccountMeta,
   getNordigenAccountTransactions,
   getNordigenInstitution,
   getNordigenInstitutions,
-  getNordigenRequisitions,
+  getRequisitionById,
 } from '@/layers/nordigen/nordigen.utils'
 
 const nordigenCurrency = (value: string) => currency(value, NORDIGEN_CURRENCY)
@@ -50,6 +60,16 @@ export const getAccountInstitutions = async (req: GetAccountInstitutionsReq, res
   const searchResults = query
     ? fuzzysort.go(query, institutions, { key: 'name' }).map((search) => search.obj)
     : institutions
+
+  // Append Sandbox Institution
+  searchResults.push({
+    id: 'SANDBOXFINANCE_SFIN0000',
+    name: 'Sandbox Finance',
+    bic: 'SFIN0000',
+    transaction_total_days: '90',
+    countries: ['XX'],
+    logo: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png',
+  })
 
   res.json({
     success: true,
@@ -66,21 +86,22 @@ export const createAccountRequisition = async (
   req: ServerRequest<CreateAccountRequisitionBody>,
   res: ServerResponse
 ) => {
-  validationResult(req).throw()
-
-  const { institutionId, redirect } = req.body
-
-  const { data: bankInfo } = await getNordigenInstitution({ institutionId })
+  const { institutionId, redirect, maxHistoricalDays } = req.body
 
   const { data: agreement } = await createNordigenAgreement({
-    institutionId,
-    maxHistoricalDays: bankInfo.transaction_total_days,
+    institution_id: institutionId,
+    max_historical_days: maxHistoricalDays,
+    access_scope: NORDIGEN_ACCESS_SCOPE,
+    access_valid_for_days: NORDIGEN_ACCESS_VALID_FOR_DAYS,
   })
 
   const { data: requisition } = await createNordigenRequisition({
     redirect,
-    institutionId,
-    agreementId: agreement.id,
+    institution_id: institutionId,
+    agreement: agreement.id,
+    account_selection: false,
+    redirect_immediate: false,
+    user_language: 'da',
   })
 
   res.json({
@@ -100,25 +121,23 @@ export const getAvailableAccounts = async (
 
   const { requisitionId } = req.params
 
-  const { data } = await getNordigenRequisitions({ requisitionId })
+  const { data } = await getRequisitionById(requisitionId)
 
-  const accounts = []
+  const accounts = data.accounts?.map(async (accountId) => {
+    const { data: metadata } = await getAccountMetadata(accountId)
+    const { data: institution } = await getInstitutionById(String(metadata.institution_id))
 
-  for (const accountId of data.accounts) {
-    const { data: accountMeta } = await getNordigenAccountMeta({ accountId })
-    const { data: bankInfo } = await getNordigenInstitution({ institutionId: accountMeta.institution_id })
+    const { data: details } = await getAccountDetailsById(accountId)
+    const { data: balances } = await getAccountBalanceById(accountId)
 
-    const { data: details } = await getNordigenAccountDetails({ accountId })
-    const { data: balances } = await getNordigenAccountBalances({ accountId })
-
-    accounts.push({
+    return {
       accountId,
-      accountName: details.account.name,
-      accountIban: details.account.iban,
-      bankLogo: bankInfo.logo,
-      accountBalance: nordigenCurrency(balances.balances[0].balanceAmount.amount).format(FORMATTED_CURRENCY),
-    })
-  }
+      accountName: details.name,
+      accountIban: details.iban,
+      accountBalance: dkk(balances ? balances[0]?.balanceAmount.amount : undefined),
+      institutionLogo: institution.logo,
+    }
+  })
 
   res.json({
     success: true,

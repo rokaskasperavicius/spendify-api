@@ -1,9 +1,10 @@
-import { ServerRequest } from '@global/types'
+import { z } from 'zod'
 
-export type CreateAccountRequisitionBody = {
-  institutionId: string
-  redirect: string
-}
+import { ServerRequest } from '@/global/types'
+
+import { CreateAccountRequisitionSchema } from './accounts.validators'
+
+export type CreateAccountRequisitionBody = z.infer<typeof CreateAccountRequisitionSchema>
 
 export type GetAccountInstitutionsReq = ServerRequest<object, object, { query: string }>
 

@@ -1,3 +1,5 @@
+import { AxiosResponse } from 'axios'
+
 import { NORDIGEN_ACCESS_SCOPE, NORDIGEN_ACCESS_VALID_FOR_DAYS, NORDIGEN_COUNTRY } from '@/global/constants'
 
 import { nordigenApi } from '@/layers/nordigen/nordigen.api'
@@ -20,38 +22,43 @@ import {
   GetNordigenRequisitionResponse,
 } from '@/layers/nordigen/nordigen.types'
 
-export const createNordigenAgreement = ({ institutionId, maxHistoricalDays }: CreateNordigenAgreementBody) =>
-  nordigenApi.post<CreateNordigenAgreementResponse>('/agreements/enduser/', {
-    institution_id: institutionId,
-    max_historical_days: maxHistoricalDays,
-    access_valid_for_days: NORDIGEN_ACCESS_VALID_FOR_DAYS,
-    access_scope: NORDIGEN_ACCESS_SCOPE,
-  })
+import {
+  AccountBalance,
+  AccountDetails,
+  AccountMetadata,
+  EndUserAgreement,
+  EndUserAgreementBody,
+  Institution,
+  Institutions,
+  Requisition,
+  RequisitionBody,
+  RequisitionInfo,
+} from '../test'
 
-export const createNordigenRequisition = ({ institutionId, redirect, agreementId }: CreateNordigenRequisitionBody) =>
-  nordigenApi.post<CreateNordigenRequisitionResponse>('/requisitions/', {
-    institution_id: institutionId,
-    redirect: redirect,
-    agreement: agreementId,
-  })
+export const createNordigenAgreement = (body: EndUserAgreementBody) =>
+  nordigenApi.post<EndUserAgreement, AxiosResponse<EndUserAgreement>, EndUserAgreementBody>(
+    '/agreements/enduser/',
+    body
+  )
 
-export const getNordigenAccountBalances = ({ accountId }: GetNordigenAccountBalancesBody) =>
-  nordigenApi.get<GetNordigenAccountBalancesResponse>(`/accounts/${accountId}/balances/`)
+export const createNordigenRequisition = (body: RequisitionBody) =>
+  nordigenApi.post<Requisition, AxiosResponse<Requisition>, RequisitionBody>('/requisitions/', body)
 
-export const getNordigenAccountDetails = ({ accountId }: GetNordigenAccountDetailsBody) =>
-  nordigenApi.get<GetNordigenAccountDetailsResponse>(`/accounts/${accountId}/details/`)
+export const getAccountBalanceById = (accountId: string) =>
+  nordigenApi.get<AccountBalance>(`/accounts/${accountId}/balances/`)
 
-export const getNordigenAccountMeta = ({ accountId }: GetNordigenAccountMetaBody) =>
-  nordigenApi.get<GetNordigenAccountMetaResponse>(`/accounts/${accountId}/`)
+export const getAccountDetailsById = (accountId: string) =>
+  nordigenApi.get<AccountDetails>(`/accounts/${accountId}/details/`)
+
+export const getAccountMetadata = (accountId: string) => nordigenApi.get<AccountMetadata>(`/accounts/${accountId}/`)
 
 export const getNordigenAccountTransactions = ({ accountId }: GetNordigenAccountTransactionsBody) =>
   nordigenApi.get<GetNordigenAccountTransactionsResponse>(`/accounts/${accountId}/transactions/`)
 
-export const getNordigenInstitution = ({ institutionId }: GetNordigenInstitutionBody) =>
-  nordigenApi.get<GetNordigenInstitutionResponse>(`/institutions/${institutionId}`)
+export const getInstitutionById = (institutionId: string) =>
+  nordigenApi.get<Institution>(`/institutions/${institutionId}`)
 
-export const getNordigenInstitutions = () =>
-  nordigenApi.get<GetNordigenInstitutionResponse[]>(`/institutions/?country=${NORDIGEN_COUNTRY}`)
+export const getNordigenInstitutions = () => nordigenApi.get<Institutions>(`/institutions/?country=${NORDIGEN_COUNTRY}`)
 
-export const getNordigenRequisitions = ({ requisitionId }: GetNordigenRequisitionBody) =>
-  nordigenApi.get<GetNordigenRequisitionResponse>(`/requisitions/${requisitionId}/`)
+export const getRequisitionById = (requisitionId: string) =>
+  nordigenApi.get<RequisitionInfo>(`/requisitions/${requisitionId}/`)

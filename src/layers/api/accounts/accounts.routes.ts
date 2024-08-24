@@ -1,36 +1,49 @@
+import express, { NextFunction } from 'express'
 import 'express-async-errors'
-import express from 'express'
+import { StatusCodes } from 'http-status-codes'
+import { ZodSchema, z } from 'zod'
 
-// Handlers
+import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/global/types'
+
 import {
   createAccount,
   createAccountRequisition,
-  getAccounts,
+  deleteAccountHandler,
   getAccountInstitutions,
   getAccountTransactions,
-  getAvailableAccounts,
-  deleteAccountHandler,
   getAccountTransactionsGroupedHandler,
-} from '@layers/api/accounts/accounts.handlers'
-
-// Helpers
-import { verifyUser } from '@middlewares'
-
-// Validators
+  getAccounts,
+  getAvailableAccounts,
+} from '@/layers/api/accounts/accounts.handlers'
 import {
+  CreateAccountRequisitionSchema,
   validateCreateAccountRequisition,
+  validateDeleteAccount,
+  validateGetAccountTransactions,
+  validateGetAccountTransactionsGrouped,
   validateGetAvailableAccounts,
   validateLinkAccount,
-  validateGetAccountTransactions,
-  validateDeleteAccount,
-  validateGetAccountTransactionsGrouped,
-} from '@layers/api/accounts/accounts.validators'
+} from '@/layers/api/accounts/accounts.validators'
+
+import { verifyUser } from '@/middlewares'
 
 const app = express.Router()
 
+export function validateSchema(schema: ZodSchema) {
+  return (req: ServerRequest, res: ServerResponse, next: NextFunction) => {
+    try {
+      schema.parse(req.body)
+      next()
+    } catch (error) {
+      console.log(error)
+      throw new ServerError(StatusCodes.BAD_REQUEST, ERROR_CODES.INVALID_SCHEMA)
+    }
+  }
+}
+
 app.get('/institutions', getAccountInstitutions)
 
-app.post('/create-requisition', verifyUser, validateCreateAccountRequisition, createAccountRequisition)
+app.post('/create-requisition', verifyUser, validateSchema(CreateAccountRequisitionSchema), createAccountRequisition)
 
 app.get('/available-accounts/:requisitionId', verifyUser, validateGetAvailableAccounts, getAvailableAccounts)
 

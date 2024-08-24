@@ -20,5 +20,8 @@
     ],
     "rules": {
         "prettier/prettier": "error"
-    }
+    },
+    "ignores": [
+        "gocardless.d.ts"
+    ]
 }

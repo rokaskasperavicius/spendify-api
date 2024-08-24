@@ -11,6 +11,8 @@ export const NORDIGEN_COUNTRY = process.env.NORDIGEN_COUNTRY as string
 export const NORDIGEN_ACCESS_VALID_FOR_DAYS = 90
 export const NORDIGEN_ACCESS_SCOPE = ['balances', 'details', 'transactions']
 
+export const GOCARDLESS_SANDBOX_INSTITUTION_ID = 'SANDBOXFINANCE_SFIN0000'
+
 // Other
 export const NORDIGEN_CURRENCY = { symbol: '', separator: '', decimal: '.' }
 export const FORMATTED_CURRENCY = { symbol: '', decimal: ',', separator: '.' }

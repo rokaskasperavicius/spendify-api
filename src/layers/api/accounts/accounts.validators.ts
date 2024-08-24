@@ -1,4 +1,11 @@
 import { body, param, query } from 'express-validator'
+import { z } from 'zod'
+
+export const CreateAccountRequisitionSchema = z.object({
+  institutionId: z.string(),
+  redirect: z.string().url(),
+  maxHistoricalDays: z.number(),
+})
 
 export const validateCreateAccountRequisition = [
   body('institutionId').notEmpty(),
