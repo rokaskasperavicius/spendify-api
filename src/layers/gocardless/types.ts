@@ -1,14 +1,6 @@
-import type { components, paths } from './gocardless'
+import type { paths } from './generated'
 
-// // Schema Obj
-// type MyType = components['schemas']['MyType']
-
-// // Path params
-// type EndpointParams = paths['/my/endpoint']['parameters']
-
-// // Response obj
-// type SuccessResponse = paths['/my/endpoint']['get']['responses'][200]['content']['application/json']['schema']
-// type ErrorResponse = paths['/my/endpoint']['get']['responses'][500]['content']['application/json']['schema']
+export type NewToken = paths['/api/v2/token/new/']['post']['responses'][200]['content']['application/json']
 
 export type Institutions = paths['/api/v2/institutions/']['get']['responses'][200]['content']['application/json']
 
@@ -26,9 +18,22 @@ export type RequisitionInfo =
 export type AccountMetadata = paths['/api/v2/accounts/{id}/']['get']['responses'][200]['content']['application/json']
 
 export type AccountDetails =
-  paths['/api/v2/accounts/{id}/details/']['get']['responses'][200]['content']['application/json']['account']
+  paths['/api/v2/accounts/{id}/details/']['get']['responses'][200]['content']['application/json']
 
 export type AccountBalance =
-  paths['/api/v2/accounts/{id}/balances/']['get']['responses'][200]['content']['application/json']['balances']
+  paths['/api/v2/accounts/{id}/balances/']['get']['responses'][200]['content']['application/json']
+
+export type AccountTransactions = {
+  transactions: paths['/api/v2/accounts/{id}/transactions/']['get']['responses'][200]['content']['application/json']
+}
+
+export type BookedTransaction = AccountTransactions['transactions']['booked'][0]
+export type FormattedTransaction = Omit<BookedTransaction, 'valueDate'> & {
+  title: string
+  category: string
+  amount: number
+  totalAmount: number
+  valueDate: string
+}
 
 export type Institution = paths['/api/v2/institutions/{id}/']['get']['responses'][200]['content']['application/json']

@@ -1,65 +1,33 @@
-import express, { NextFunction } from 'express'
-import 'express-async-errors'
-import { StatusCodes } from 'http-status-codes'
-import { ZodSchema, z } from 'zod'
+import express from 'express'
 
-import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/global/types'
+import { validateSchema, verifyUser } from '@/middlewares'
 
+import { CreateAccountSchema, createAccount } from './handlers/create-account'
+import { CreateAccountRequisitionSchema, createAccountRequisition } from './handlers/create-account-requisition'
+import { GetAccountInstitutionsSchema, getAccountInstitutions } from './handlers/get-account-institutions'
+import { GetAccountTransactionsSchema, getAccountTransactions } from './handlers/get-account-transactions'
 import {
-  createAccount,
-  createAccountRequisition,
-  deleteAccountHandler,
-  getAccountInstitutions,
-  getAccountTransactions,
-  getAccountTransactionsGroupedHandler,
-  getAccounts,
-  getAvailableAccounts,
-} from '@/layers/api/accounts/accounts.handlers'
-import {
-  CreateAccountRequisitionSchema,
-  validateCreateAccountRequisition,
-  validateDeleteAccount,
-  validateGetAccountTransactions,
-  validateGetAccountTransactionsGrouped,
-  validateGetAvailableAccounts,
-  validateLinkAccount,
-} from '@/layers/api/accounts/accounts.validators'
-
-import { verifyUser } from '@/middlewares'
+  GetAccountTransactionsGroupedSchema,
+  getAccountTransactionsGrouped,
+} from './handlers/get-account-transactions-grouped'
+import { getAccounts } from './handlers/get-accounts'
+import { GetAvailableAccountsSchema, getAvailableAccounts } from './handlers/get-available-accounts'
 
 const app = express.Router()
 
-export function validateSchema(schema: ZodSchema) {
-  return (req: ServerRequest, res: ServerResponse, next: NextFunction) => {
-    try {
-      schema.parse(req.body)
-      next()
-    } catch (error) {
-      console.log(error)
-      throw new ServerError(StatusCodes.BAD_REQUEST, ERROR_CODES.INVALID_SCHEMA)
-    }
-  }
-}
-
-app.get('/institutions', getAccountInstitutions)
-
+app.get('/institutions', validateSchema(GetAccountInstitutionsSchema), getAccountInstitutions)
 app.post('/create-requisition', verifyUser, validateSchema(CreateAccountRequisitionSchema), createAccountRequisition)
-
-app.get('/available-accounts/:requisitionId', verifyUser, validateGetAvailableAccounts, getAvailableAccounts)
-
+app.get('/available/:requisitionId', verifyUser, validateSchema(GetAvailableAccountsSchema), getAvailableAccounts)
 app.get('/', verifyUser, getAccounts)
-
-app.post('/', verifyUser, validateLinkAccount, createAccount)
-
-app.delete('/', verifyUser, validateDeleteAccount, deleteAccountHandler)
-
-app.get('/:accountId/transactions', verifyUser, validateGetAccountTransactions, getAccountTransactions)
-
+app.post('/', verifyUser, validateSchema(CreateAccountSchema), createAccount)
+app.get('/:accountId/transactions', verifyUser, validateSchema(GetAccountTransactionsSchema), getAccountTransactions)
 app.get(
   '/:accountId/transactions/grouped',
   verifyUser,
-  validateGetAccountTransactionsGrouped,
-  getAccountTransactionsGroupedHandler
+  validateSchema(GetAccountTransactionsGroupedSchema),
+  getAccountTransactionsGrouped
 )
+
+// app.delete('/', verifyUser, validateDeleteAccount, deleteAccountHandler)
 
 export default app

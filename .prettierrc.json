@@ -14,6 +14,8 @@
     "^@/layers",
     "^@/middlewares/(.*)$",
     "^@/middlewares",
+    "^@/mocks/(.*)$",
+    "^@/mocks",
     "^[./]"
   ],
   "importOrderSeparation": true,

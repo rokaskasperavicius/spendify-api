@@ -2,16 +2,16 @@ import axios, { AxiosError } from 'axios'
 
 import { NORDIGEN_BASE_URL, NORDIGEN_SECRET_ID, NORDIGEN_SECRET_KEY } from '@/global/constants'
 
-import nordigenTokens from '@/layers/nordigen/nordigen.tokens'
-import { CreatedNordigenToken } from '@/layers/nordigen/nordigen.types'
+import { NewToken } from './types'
+import gocardlessTokens from './utils'
 
-const nordigenApi = axios.create({
+const gocardlessApi = axios.create({
   baseURL: NORDIGEN_BASE_URL,
 })
 
-nordigenApi.interceptors.request.use(
+gocardlessApi.interceptors.request.use(
   async (config) => {
-    const accessToken = nordigenTokens.accessToken
+    const accessToken = gocardlessTokens.accessToken
     config.headers['Authorization'] = `Bearer ${accessToken}`
 
     return config
@@ -22,32 +22,31 @@ nordigenApi.interceptors.request.use(
   }
 )
 
-nordigenApi.interceptors.response.use(
+gocardlessApi.interceptors.response.use(
   (response) => {
     return response
   },
 
   async (error: AxiosError) => {
     const { response, config } = error
+    console.log(error)
     if (!config) return null
 
     // 401 - Unauthorized
     if (response?.status === 401) {
-      const body = {
+      const { data } = await axios.post<NewToken>(`${NORDIGEN_BASE_URL}/token/new/`, {
         secret_id: NORDIGEN_SECRET_ID,
         secret_key: NORDIGEN_SECRET_KEY,
-      }
+      })
 
-      const { data } = await axios.post<CreatedNordigenToken>(`${NORDIGEN_BASE_URL}/token/new/`, body)
+      gocardlessTokens.setAccessToken(data.access)
+      gocardlessTokens.setRefreshToken(data.refresh)
 
-      nordigenTokens.setAccessToken(data.access)
-      nordigenTokens.setRefreshToken(data.refresh)
-
-      return nordigenApi(config)
+      return gocardlessApi(config)
     }
 
     return Promise.reject(error)
   }
 )
 
-export { nordigenApi }
+export { gocardlessApi }

@@ -8,7 +8,6 @@
 */
 import express from 'express'
 import 'express-async-errors'
-import { validateRequest } from 'zod-express-middleware'
 
 import {
   destroySessionHandler,

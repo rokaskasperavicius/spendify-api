@@ -7,7 +7,7 @@
     "start": "ts-node --transpileOnly -r tsconfig-paths/register src/index.ts",
     "dev": "npm run codegen && npm run dotenv-pull && ts-node-dev -r tsconfig-paths/register src/index.ts",
     "dotenv-pull": "npx dotenv-vault@latest pull",
-    "codegen": "openapi-typescript https://bankaccountdata.gocardless.com/api/v2/swagger.json -o ./src/layers/gocardless.d.ts",
+    "codegen": "openapi-typescript https://bankaccountdata.gocardless.com/api/v2/swagger.json -o ./src/layers/gocardless/generated.d.ts",
     "eslint": "eslint . --max-warnings 0",
     "tsc": "tsc --noEmit"
   },
@@ -61,6 +61,7 @@
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.34.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "msw": "^2.3.5",
     "openapi-typescript": "^7.3.0",
     "prettier": "2.8.4",
     "prisma": "^5.14.0",

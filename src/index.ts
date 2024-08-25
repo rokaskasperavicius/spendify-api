@@ -4,16 +4,28 @@ import 'dotenv/config'
 import express, { NextFunction, Request, Response } from 'express'
 import rateLimit from 'express-rate-limit'
 import { StatusCodes } from 'http-status-codes'
+import { setupServer } from 'msw/node'
 
 import { COOKIE_SECRET, NODE_ENV } from '@/global/constants'
 import { ERROR_CODES, ServerError } from '@/global/types'
 
 import apiRoutes from '@/layers/api'
 
+import { handlers } from '@/mocks/handlers'
+
 // Setup
+const server = setupServer(...handlers)
 const app = express()
 app.use(express.json())
 app.use(cookieParser(COOKIE_SECRET))
+
+if (NODE_ENV === 'development') {
+  server.listen({
+    // This is going to perform unhandled requests
+    // but print no warning whatsoever when they happen.
+    onUnhandledRequest: 'bypass',
+  })
+}
 
 const port = process.env.PORT || 8080
 
@@ -49,35 +61,23 @@ app.get('/', async (req, res) => {
 
 app.use('/v1', apiRoutes)
 
-app.use(
-  (
-    error: Error,
-    req: Request,
-    res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    next: NextFunction
-  ) => {
-    let status = StatusCodes.INTERNAL_SERVER_ERROR
-    let code: ERROR_CODES = -1
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+  let status = StatusCodes.INTERNAL_SERVER_ERROR
+  let code: ERROR_CODES = -1
 
-    if (error instanceof ServerError) {
-      status = error.status
-      code = error.code || -1
-    }
-
-    let message = error.message
-
-    if (NODE_ENV === 'production') {
-      message = 'Something went wrong'
-    }
-
-    res.status(status).json({
-      success: false,
-      message,
-      code,
-    })
+  if (error instanceof ServerError) {
+    status = error.status
+    code = error.code || -1
   }
-)
+
+  console.error(error.message)
+
+  res.status(status).json({
+    success: false,
+    code,
+  })
+})
 
 // plan https://chatgpt.com/c/d8b8e14e-cb3a-4b1b-b812-f2bb79ac1077
 // use crypto.randomUUID() to generate a random sessions
