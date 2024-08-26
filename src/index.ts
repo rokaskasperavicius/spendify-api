@@ -2,16 +2,17 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
 import express, { NextFunction, Request, Response } from 'express'
+import 'express-async-errors'
 import rateLimit from 'express-rate-limit'
 import { StatusCodes } from 'http-status-codes'
 import { setupServer } from 'msw/node'
 
-import { COOKIE_SECRET, NODE_ENV } from '@/global/constants'
-import { ERROR_CODES, ServerError } from '@/global/types'
-
-import apiRoutes from '@/layers/api'
+import { COOKIE_SECRET, NODE_ENV } from '@/lib/constants'
+import { ERROR_CODES, ServerError } from '@/lib/types'
 
 import { handlers } from '@/mocks/handlers'
+
+import apiRoutes from '@/services/api'
 
 // Setup
 const server = setupServer(...handlers)
@@ -71,7 +72,9 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     code = error.code || -1
   }
 
-  console.error(error.message)
+  if (error.message) {
+    console.error(error.message)
+  }
 
   res.status(status).json({
     success: false,
@@ -94,5 +97,5 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
 // add mailsend for verifying emails
 
 app.listen(port, () => {
-  console.log(`⚡️ [server]: Server is running at http://localhost:${port}`)
+  console.log(`⚡️ [SERVER]: Server is running at http://localhost:${port}`)
 })

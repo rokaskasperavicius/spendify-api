@@ -1,8 +1,8 @@
 import { NextFunction } from 'express'
 
-import { ServerError, ServerRequest, ServerResponse } from '@/global/types'
+import { ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
-import prisma from '@/layers/database/db'
+import prisma from '@/services/prisma'
 
 export const verifyUser = async (req: ServerRequest, res: ServerResponse, next: NextFunction) => {
   const sessionToken = req.signedCookies.session as string | undefined

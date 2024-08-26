@@ -1,6 +1,6 @@
 import { HttpResponse, http } from 'msw'
 
-import { NORDIGEN_BASE_URL } from '@/global/constants'
+import { NORDIGEN_BASE_URL } from '@/lib/constants'
 
 import { transactions } from './transactions'
 
