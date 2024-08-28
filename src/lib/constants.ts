@@ -1,8 +1,10 @@
+// Global
 export const NODE_ENV = process.env.NODE_ENV as string
 export const DATABASE_URL = process.env.DATABASE_URL as string
 export const COOKIE_SECRET = process.env.COOKIE_SECRET as string
+export const SYNC_ADMIN_KEY = process.env.SYNC_ADMIN_KEY as string
 
-// Nordigen
+// GoCardless
 export const GOCARDLESS_BASE_URL = process.env.GOCARDLESS_BASE_URL as string
 export const GOCARDLESS_SECRET_ID = process.env.GOCARDLESS_SECRET_ID as string
 export const GOCARDLESS_SECRET_KEY = process.env.GOCARDLESS_SECRET_KEY as string

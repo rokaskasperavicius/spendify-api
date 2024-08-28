@@ -12,6 +12,8 @@
     "^@/middlewares/(.*)$",
     "^@/mocks",
     "^@/mocks/(.*)$",
+    "^@/routes",
+    "^@/routes/(.*)$",
     "^@/services",
     "^@/services/(.*)$",
     "^[./]"

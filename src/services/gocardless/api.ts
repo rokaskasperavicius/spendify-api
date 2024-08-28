@@ -34,8 +34,10 @@ export const getAccountDetailsById = (accountId: string) =>
 
 export const getAccountMetadata = (accountId: string) => gocardlessApi.get<AccountMetadata>(`/accounts/${accountId}/`)
 
-export const getAccountTransactionsById = (accountId: string) =>
-  gocardlessApi.get<AccountTransactions>(`/accounts/${accountId}/transactions/`)
+export const getAccountTransactionsById = (accountId: string, dateFrom?: string) =>
+  gocardlessApi.get<AccountTransactions>(
+    `/accounts/${accountId}/transactions/${dateFrom ? `?date_from=${dateFrom}` : ''}`
+  )
 
 export const getInstitutionById = (institutionId: string) =>
   gocardlessApi.get<Institution>(`/institutions/${institutionId}`)
