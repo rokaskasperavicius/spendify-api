@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -7,32 +8,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model accounts {
-  id           Int     @id @default(autoincrement())
-  user_id      Int?
-  account_id   String?
-  account_name String?
-  account_iban String?
-  bank_name    String?
-  bank_logo    String?
-  users        users?  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+model Accounts {
+  id               String   @id
+  name             String?
+  balance          Float
+  iban             String?
+  institution_name String?
+  institution_logo String?
+  last_synced      DateTime
+
+  users        Users[]
+  Transactions Transactions[]
 }
 
-model sessions {
+model Transactions {
+  weight       Int      @id @default(autoincrement())
+  id           String   @unique
+  account_id   String
+  amount       Float
+  total_amount Float
+  title        String
+  category     String
+  date         DateTime
+  account      Accounts @relation(fields: [account_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+}
+
+model Sessions {
   id            Int      @id @default(autoincrement())
   user_id       Int
   session_token String   @unique
   expires_at    DateTime
   ip_address    String
   ip_location   String
-  users         users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  users Users @relation(fields: [user_id], references: [id])
 }
 
-model users {
-  id       Int        @id @default(autoincrement())
+model Users {
+  id       Int     @id @default(autoincrement())
   name     String?
-  email    String     @unique
+  email    String  @unique
   password String
-  accounts accounts[]
-  tokens   sessions[]
+
+  tokens   Sessions[]
+  accounts Accounts[]
 }
