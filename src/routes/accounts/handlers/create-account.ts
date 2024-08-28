@@ -64,11 +64,12 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     },
   })
 
-  // Here we should sync transactions
+  // Here we sync transactions
   const { data } = await getAccountTransactionsById(accountId)
-  const currentBalance = totalBalance
 
-  const transformed = transformTransactions(data.transactions.booked, currentBalance).reverse()
+  // Reversing is important because we want to insert the oldest transactions first
+  // This way the database will have autoincremented ids that we can use as the sorting weight
+  const transformed = transformTransactions(data.transactions.booked, totalBalance).reverse()
 
   const result = await prisma.transactions.createMany({
     data: transformed.map((transaction) => ({

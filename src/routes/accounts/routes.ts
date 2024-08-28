@@ -13,6 +13,7 @@ import {
 } from './handlers/get-account-transactions-grouped'
 import { getAccounts } from './handlers/get-accounts'
 import { GetAvailableAccountsSchema, getAvailableAccounts } from './handlers/get-available-accounts'
+import { SyncAccountTransactionsSchema, syncAccountTransactions } from './handlers/sync-account-transactions'
 
 const app = express.Router()
 
@@ -28,7 +29,7 @@ app.get(
   validateSchema(GetAccountTransactionsGroupedSchema),
   getAccountTransactionsGrouped
 )
-
 app.delete('/', verifyUser, validateSchema(DeleteAccountSchema), deleteAccount)
+app.get('/transactions/sync', validateSchema(SyncAccountTransactionsSchema), syncAccountTransactions)
 
 export default app

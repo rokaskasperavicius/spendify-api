@@ -6,13 +6,16 @@ import 'express-async-errors'
 import rateLimit from 'express-rate-limit'
 import { StatusCodes } from 'http-status-codes'
 import { setupServer } from 'msw/node'
+import schedule from 'node-schedule'
 
 import { COOKIE_SECRET, NODE_ENV } from '@/lib/constants'
 import { ERROR_CODES, ServerError } from '@/lib/types'
 
 import { handlers } from '@/mocks/handlers'
 
-import apiRoutes from '@/services/api'
+import apiRoutes from '@/routes'
+
+import { syncTransactions } from './lib/utils/sync-transactions'
 
 // Setup
 const server = setupServer(...handlers)
@@ -61,6 +64,22 @@ app.get('/', async (req, res) => {
 })
 
 app.use('/v1', apiRoutes)
+
+/**
+ * Create a cron job to sync transactions every day at 3am and 15pm UTC
+ *
+ * You can check how the cron job parser works here:
+ * https://crontab.guru/#0_3,15_*_*_*
+ */
+schedule.scheduleJob('0 3,15 * * *', async () => {
+  try {
+    console.info('[INFO] Running cron job to sync transactions')
+
+    await syncTransactions()
+  } catch (error) {
+    console.error('Cron job failed to sync transactions with error:', error)
+  }
+})
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
