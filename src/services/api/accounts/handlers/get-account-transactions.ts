@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
+import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
 import prisma from '@/services/prisma'
 
 export const GetAccountTransactionsSchema = z.object({
@@ -64,8 +65,8 @@ export const getAccountTransactions = async (
     if (!from || !to) return true
 
     const transactionDate = transaction.date.getTime()
-    const fromDate = startOfDay(new Date(parseInt(from))).getTime()
-    const endDate = endOfDay(new Date(parseInt(to))).getTime()
+    const fromDate = startOfDay(new Date(from)).getTime()
+    const endDate = endOfDay(new Date(to)).getTime()
 
     return transactionDate >= fromDate && transactionDate <= endDate
   })
@@ -74,6 +75,16 @@ export const getAccountTransactions = async (
 
   res.json({
     success: true,
-    data: transactions,
+    data: transactions.map((transaction) => ({
+      id: transaction.id,
+      title: transaction.title,
+      weight: transaction.weight,
+      amount: gocardlessCurrency(transaction.amount).format(),
+      totalAmount: gocardlessCurrency(transaction.total_amount).format(),
+      amountInt: transaction.amount,
+      totalAmountInt: transaction.total_amount,
+      category: transaction.category,
+      date: transaction.date,
+    })),
   })
 }

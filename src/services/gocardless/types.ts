@@ -28,9 +28,10 @@ export type AccountTransactions = {
 }
 
 export type BookedTransaction = AccountTransactions['transactions']['booked'][0]
-export type FormattedTransaction = Omit<BookedTransaction, 'valueDate'> & {
+export type FormattedTransaction = Omit<BookedTransaction, 'valueDate' | 'transactionId'> & {
   title: string
   category: string
+  transactionId: string
   amount: number
   totalAmount: number
   valueDate: string

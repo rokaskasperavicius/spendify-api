@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios'
 
-import { NORDIGEN_COUNTRY } from '@/lib/constants'
+import { GOCARDLESS_COUNTRY } from '@/lib/constants'
 
 import { gocardlessApi } from './api-service'
 import {
@@ -40,8 +40,7 @@ export const getAccountTransactionsById = (accountId: string) =>
 export const getInstitutionById = (institutionId: string) =>
   gocardlessApi.get<Institution>(`/institutions/${institutionId}`)
 
-export const getNordigenInstitutions = () =>
-  gocardlessApi.get<Institutions>(`/institutions/?country=${NORDIGEN_COUNTRY}`)
+export const getInstitutions = () => gocardlessApi.get<Institutions>(`/institutions/?country=${GOCARDLESS_COUNTRY}`)
 
 export const getRequisitionById = (requisitionId: string) =>
   gocardlessApi.get<RequisitionInfo>(`/requisitions/${requisitionId}/`)

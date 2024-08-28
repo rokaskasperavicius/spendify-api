@@ -1,5 +1,6 @@
 import { ServerRequest, ServerResponse } from '@/lib/types'
 
+import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
 import prisma from '@/services/prisma'
 
 export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
@@ -20,9 +21,10 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
         id: account.id,
         name: account.name,
         iban: account.iban,
-        balance: account.balance,
+        balance: gocardlessCurrency(account.balance).format(),
         institutionName: account.institution_name,
         institutionLogo: account.institution_logo,
+        lastSyncedAt: account.last_synced,
       })),
     },
   })

@@ -82,20 +82,6 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   })
 })
 
-// plan https://chatgpt.com/c/d8b8e14e-cb3a-4b1b-b812-f2bb79ac1077
-// use crypto.randomUUID() to generate a random sessions
-// randomBytes is deprecated in crypto !!!
-// store the session in a cookie -> secure: true, httpOnly: true, sameSite: 'strict'
-// store the session in a database
-// create a middleware to check if the session is valid
-// no jwt?
-// no refresh token? Cookies will be valid for 1 hour
-
-// figure prisma migration with local db
-// figure prisma migration with heroku db
-
-// add mailsend for verifying emails
-
 app.listen(port, () => {
   console.log(`⚡️ [SERVER]: Server is running at http://localhost:${port}`)
 })

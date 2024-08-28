@@ -1,12 +1,12 @@
 import axios, { AxiosError } from 'axios'
 
-import { NORDIGEN_BASE_URL, NORDIGEN_SECRET_ID, NORDIGEN_SECRET_KEY } from '@/lib/constants'
+import { GOCARDLESS_BASE_URL, GOCARDLESS_SECRET_ID, GOCARDLESS_SECRET_KEY } from '@/lib/constants'
 
 import { NewToken } from './types'
 import gocardlessTokens from './utils/tokens'
 
 const gocardlessApi = axios.create({
-  baseURL: NORDIGEN_BASE_URL,
+  baseURL: GOCARDLESS_BASE_URL,
 })
 
 gocardlessApi.interceptors.request.use(
@@ -33,9 +33,9 @@ gocardlessApi.interceptors.response.use(
 
     // 401 - Unauthorized
     if (response?.status === 401) {
-      const { data } = await axios.post<NewToken>(`${NORDIGEN_BASE_URL}/token/new/`, {
-        secret_id: NORDIGEN_SECRET_ID,
-        secret_key: NORDIGEN_SECRET_KEY,
+      const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
+        secret_id: GOCARDLESS_SECRET_ID,
+        secret_key: GOCARDLESS_SECRET_KEY,
       })
 
       gocardlessTokens.setAccessToken(data.access)

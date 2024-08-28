@@ -72,8 +72,8 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
 
   const result = await prisma.transactions.createMany({
     data: transformed.map((transaction) => ({
+      id: transaction.transactionId,
       account_id: accountId,
-      transaction_id: transaction.transactionId,
       title: transaction.title,
       category: transaction.category,
       amount: transaction.amount,

@@ -21,25 +21,16 @@ model Accounts {
   Transactions Transactions[]
 }
 
-// model UserAccounts {
-//   user_id    Int
-//   account_id String
-//   user       Users    @relation(fields: [user_id], references: [id])
-//   account    Accounts @relation(fields: [account_id], references: [id])
-
-//   @@id([user_id, account_id])
-// }
-
 model Transactions {
-  weight         Int      @id @default(autoincrement())
-  transaction_id String?  @unique
-  account_id     String
-  amount         Float
-  total_amount   Float
-  title          String
-  category       String
-  date           DateTime
-  account        Accounts @relation(fields: [account_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  weight       Int      @id @default(autoincrement())
+  id           String   @unique
+  account_id   String
+  amount       Float
+  total_amount Float
+  title        String
+  category     String
+  date         DateTime
+  account      Accounts @relation(fields: [account_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
 }
 
 model Sessions {

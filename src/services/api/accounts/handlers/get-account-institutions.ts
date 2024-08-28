@@ -1,9 +1,10 @@
 import fuzzysort from 'fuzzysort'
 import { z } from 'zod'
 
+import { NODE_ENV } from '@/lib/constants'
 import { ServerRequest, ServerResponse } from '@/lib/types'
 
-import { getNordigenInstitutions } from '@/services/gocardless/api'
+import { getInstitutions } from '@/services/gocardless/api'
 
 export const GetAccountInstitutionsSchema = z.object({
   query: z.object({
@@ -17,7 +18,7 @@ export const getAccountInstitutions = async (
   req: ServerRequest<object, object, Request['query']>,
   res: ServerResponse
 ) => {
-  const { data: institutions } = await getNordigenInstitutions()
+  const { data: institutions } = await getInstitutions()
   const { query } = req.query
 
   const searchResults = query
@@ -25,22 +26,24 @@ export const getAccountInstitutions = async (
     : institutions
 
   // Append Sandbox Institution
-  searchResults.push({
-    id: 'SANDBOXFINANCE_SFIN0000',
-    name: 'Sandbox Finance',
-    bic: 'SFIN0000',
-    transaction_total_days: '90',
-    countries: ['XX'],
-    logo: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png',
-  })
+  if (NODE_ENV === 'development') {
+    searchResults.push({
+      id: 'SANDBOXFINANCE_SFIN0000',
+      name: 'Sandbox Finance',
+      bic: 'SFIN0000',
+      transaction_total_days: '90',
+      countries: ['XX'],
+      logo: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png',
+    })
+  }
 
   res.json({
     success: true,
 
     data: searchResults.map(({ id, name, logo }) => ({
       id: id,
-      bankName: name,
-      bankLogo: logo,
+      name: name,
+      logo: logo,
     })),
   })
 }

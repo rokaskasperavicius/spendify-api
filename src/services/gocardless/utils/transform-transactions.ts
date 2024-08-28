@@ -73,6 +73,9 @@ export const transformTransactions = (transactions: BookedTransaction[], balance
     }
   })
 
-  // Remove unknown dates
-  return balanced.filter((transaction): transaction is FormattedTransaction => Boolean(transaction.valueDate))
+  // Remove unknown dates and transactions
+  return balanced.filter(
+    (transaction): transaction is FormattedTransaction =>
+      Boolean(transaction.valueDate) && Boolean(transaction.transactionId)
+  )
 }
