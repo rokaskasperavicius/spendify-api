@@ -37,6 +37,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
     "uuid": "^9.0.0",
+    "msw": "^2.3.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -54,7 +55,6 @@
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.34.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "msw": "^2.3.5",
     "openapi-typescript": "^7.3.0",
     "prettier": "2.8.4",
     "prisma": "^5.14.0",
