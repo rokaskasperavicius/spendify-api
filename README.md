@@ -1,12 +1,16 @@
 # Spendify API
 
+### Requirements
+- Node v20.16.0
+- PostgreSQL 16
+
 ### Setup
   1. `git clone git@github.com:rokaskasperavicius/spendify-server.git`
   2. `cd spendify-server`
   3. `nvm use` or `nvm install`
   4. `npm install`
   5. `npm run dotenv-pull`
-  6. Add Prisma here
+  6. `npx prisma migrate dev`
   7. `npm run dev`
   8. Go to [http://localhost:8080/](http://localhost:8080/)
 
