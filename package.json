@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node --transpileOnly -r tsconfig-paths/register src/index.ts",
-    "dev": "npm run codegen && ts-node-dev -r tsconfig-paths/register src/index.ts",
+    "dev": "npm run codegen && ts-node-dev --watch src/openapi/openapi.yaml -r tsconfig-paths/register src/index.ts ",
     "dotenv-pull": "npx dotenv-vault@latest pull",
     "codegen": "openapi-typescript https://bankaccountdata.gocardless.com/api/v2/swagger.json -o ./src/services/gocardless/generated.d.ts",
+    "codegen-local": "openapi-typescript http://localhost:8080/openapi.yaml -o ./src/services/gocardless/test.d.ts",
     "eslint": "eslint . --max-warnings 0",
     "tsc": "tsc --noEmit",
     "ci": "npm run eslint && npm run tsc"
@@ -37,9 +38,12 @@
     "node-schedule": "^2.1.1",
     "password-validator": "^5.3.0",
     "request-ip": "^3.3.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
     "uuid": "^9.0.0",
+    "yamljs": "^0.3.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -52,8 +56,11 @@
     "@types/node": "^18.13.0",
     "@types/node-schedule": "^2.1.7",
     "@types/request-ip": "^0.0.37",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
     "@types/uuid": "^9.0.1",
     "@types/validator": "^13.7.15",
+    "@types/yamljs": "^0.2.34",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.34.0",

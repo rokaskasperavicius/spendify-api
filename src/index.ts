@@ -7,6 +7,8 @@ import rateLimit from 'express-rate-limit'
 import { StatusCodes } from 'http-status-codes'
 import { setupServer } from 'msw/node'
 import schedule from 'node-schedule'
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
 
 import { COOKIE_SECRET, NODE_ENV } from '@/lib/constants'
 import { ERROR_CODES, ServerError } from '@/lib/types'
@@ -16,6 +18,8 @@ import { handlers } from '@/mocks/handlers'
 import apiRoutes from '@/routes'
 
 import { syncTransactions } from './lib/utils/sync-transactions'
+
+const swaggerDocument = YAML.load('./src/openapi/openapi.yaml')
 
 // Setup
 const server = setupServer(...handlers)
@@ -63,6 +67,19 @@ app.get('/', async (req, res) => {
   res.send('Spendify API')
 })
 
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Swagger',
+    customfavIcon: '/favicon.ico',
+  })
+)
+app.use('/openapi.yaml', (req, res) => {
+  res.sendFile('./openapi/openapi.yaml', { root: __dirname })
+})
+
 app.use('/v1', apiRoutes)
 
 /**
@@ -80,15 +97,16 @@ schedule.scheduleJob('0 3,15 * * *', async () => {
     console.error('Cron job failed to sync transactions with error:', error)
   }
 })
+app.use('/favicon.ico', express.static('public/favicon.png'))
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   let status = StatusCodes.INTERNAL_SERVER_ERROR
-  let code: ERROR_CODES = -1
+  let code = ERROR_CODES.UNKNOWN
 
   if (error instanceof ServerError) {
     status = error.status
-    code = error.code || -1
+    code = error.code || ERROR_CODES.UNKNOWN
   }
 
   if (error.message) {

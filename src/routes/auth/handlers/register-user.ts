@@ -24,7 +24,7 @@ export const registerUser = async (req: ServerRequest<Request['body']>, res: Ser
   const user = await prisma.users.findFirst({ where: { email } })
 
   if (user) {
-    throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.USER_EXISTS)
   }
 
   const hashedPassword = await bcrypt.hash(password, 12)

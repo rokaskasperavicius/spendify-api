@@ -1,15 +1,11 @@
 import { NextFunction } from 'express'
 
-import { ServerError, ServerRequest, ServerResponse } from '@/lib/types'
+import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import prisma from '@/services/prisma'
 
 export const verifyUser = async (req: ServerRequest, res: ServerResponse, next: NextFunction) => {
   const sessionToken = req.signedCookies.session as string | undefined
-
-  if (!sessionToken) {
-    throw new ServerError(401)
-  }
 
   const session = await prisma.sessions.findFirst({
     where: {
@@ -21,7 +17,7 @@ export const verifyUser = async (req: ServerRequest, res: ServerResponse, next: 
   })
 
   if (!session) {
-    throw new ServerError(401)
+    throw new ServerError(401, ERROR_CODES.UNAUTHORIZED)
   }
 
   res.locals.userId = session.user_id
