@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 
+import { PASSWORD_SALT_ROUNDS } from '@/lib/constants'
 import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import prisma from '@/services/prisma'
@@ -27,7 +28,7 @@ export const registerUser = async (req: ServerRequest<Request['body']>, res: Ser
     throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.USER_EXISTS)
   }
 
-  const hashedPassword = await bcrypt.hash(password, 12)
+  const hashedPassword = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS)
 
   await prisma.users.create({
     data: {

@@ -7,6 +7,7 @@
     "start": "ts-node --transpileOnly -r tsconfig-paths/register src/index.ts",
     "dev": "npm run codegen && ts-node-dev --watch src/openapi/openapi.yaml -r tsconfig-paths/register src/index.ts ",
     "dotenv-pull": "npx dotenv-vault@latest pull",
+    "prisma-migrate": "npx prisma migrate dev",
     "codegen": "openapi-typescript https://bankaccountdata.gocardless.com/api/v2/swagger.json -o ./src/services/gocardless/generated.d.ts",
     "codegen-local": "openapi-typescript http://localhost:8080/openapi.yaml -o ./src/services/gocardless/test.d.ts",
     "eslint": "eslint . --max-warnings 0",
@@ -15,6 +16,9 @@
   },
   "engines": {
     "node": "18.16.1"
+  },
+  "prisma": {
+    "seed": "ts-node --transpileOnly -r tsconfig-paths/register prisma/seed.ts"
   },
   "author": "",
   "license": "ISC",
