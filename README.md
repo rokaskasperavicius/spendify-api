@@ -17,6 +17,6 @@ http://localhost:8080/api-docs/#/
 Based on OpenApi 3.0 - https://swagger.io/docs/specification/about/
 
 ### Deployments
-Deployment to production happens automatically on merge to `main`.
+Deployment to production happens automatically on merge to `main`
 
-Deployments are done with Heroku
+Deployments are done with Heroku - https://api.spendify.dk/
