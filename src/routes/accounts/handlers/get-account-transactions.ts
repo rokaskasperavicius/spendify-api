@@ -61,14 +61,24 @@ export const getAccountTransactions = async (
     ? fuzzysort.go(search, transactions, { key: 'title', threshold: -400 }).map((search) => search.obj)
     : transactions
 
+  // from
   transactions = transactions.filter((transaction) => {
-    if (!from || !to) return true
+    if (!from) return true
 
     const transactionDate = transaction.date.getTime()
     const fromDate = startOfDay(new Date(from)).getTime()
+
+    return transactionDate >= fromDate
+  })
+
+  // to
+  transactions = transactions.filter((transaction) => {
+    if (!to) return true
+
+    const transactionDate = transaction.date.getTime()
     const endDate = endOfDay(new Date(to)).getTime()
 
-    return transactionDate >= fromDate && transactionDate <= endDate
+    return transactionDate <= endDate
   })
 
   transactions = transactions.filter((transaction) => !category || transaction.category === category)
