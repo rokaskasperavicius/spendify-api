@@ -176,7 +176,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
   /auth/sessions:
-    post:
+    get:
       summary: Get User's Sessions
       operationId: userSessions
       tags:
@@ -567,7 +567,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-  /{accountId}/transactions:
+    delete:
+      summary: Delete User's Account
+      operationId: deleteUsersAccount
+      tags:
+        - Accounts API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountId
+              properties:
+                accountId:
+                  type: string
+                  example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/{accountId}/transactions:
     get:
       summary: Get Account Transactions
       operationId: getAccountTransactions
@@ -595,13 +625,11 @@ paths:
           schema:
             format: date-time
             type: string
-          description: Both from and to have to be present to filter transactions by date 
         - in: query
           name: to
           schema:
             format: date-time
             type: string
-          description: Both from and to have to be present to filter transactions by date 
       responses:
         '200':
           description: Success
@@ -654,6 +682,89 @@ paths:
                           type: string
                           format: date-time
                           example: '2024-08-27 00:00:00'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/{accountId}/transactions/grouped:
+    get:
+      summary: Get Account Grouped Transactions
+      operationId: getAccountGroupedTransactions
+      tags:
+        - Accounts API
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+          description: User's Account ID
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - date
+                        - expenses
+                        - expensesInt
+                        - income
+                        - incomeInt
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: 'September, 2024'
+                        expenses:
+                          type: string
+                          example: '10.979,45'
+                        expensesInt:
+                          type: number
+                          example: 10979.45
+                        income:
+                          type: string
+                          example: '12.627,45'
+                        incomeInt:
+                          type: number
+                          example: 12627.45
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/transactions/sync:
+    get:
+      summary: Get Account Transactions
+      operationId: syncAccountTransactions
+      tags:
+        - Accounts API
+      parameters:
+        - in: query
+          name: admin_key
+          required: true
+          schema:
+            type: string
+          description: SYNC_ADMIN_KEY
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
         '500':
           description: Server Error
           content:
