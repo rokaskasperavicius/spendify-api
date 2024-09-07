@@ -68,7 +68,7 @@ export const loginUser = async (req: ServerRequest<Request['body']>, res: Server
     httpOnly: true,
     secure: true,
     signed: true,
-    sameSite: 'strict',
+    sameSite: 'none',
     expires: expiresAt,
   })
 
