@@ -49,16 +49,21 @@ paths:
                   data:
                     type: object
                     required:
-                      - email
-                      - name
+                      - user
                     properties:
-                      email:
-                        type: string
-                        format: email
-                        example: 'name@gmail.com'
-                      name:
-                        type: string
-                        example: 'name'
+                      user:
+                        type: object
+                        required:
+                          - email
+                          - name
+                        properties:
+                          email:
+                            type: string
+                            format: email
+                            example: 'name@gmail.com'
+                          name:
+                            type: string
+                            example: 'name'
         '400':
           description: Wrong Credentials
           content:
@@ -492,44 +497,49 @@ paths:
                   - $ref: '#/components/schemas/ApiResponse'
                 properties:
                   data:
-                    type: array
-                    items:
-                      type: object
-                      required:
-                        - id
-                        - name
-                        - iban
-                        - balance
-                        - institutionName
-                        - institutionLogo
-                        - lastSyncedAt
-                      properties:
-                        id:
-                          type: string
-                          example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
-                        name:
-                          type: string
-                          nullable: true
-                          example: 'Account Name'
-                        iban:
-                          type: string
-                          nullable: true
-                          example: 'DK4404005032950081'
-                        balance:
-                          type: string
-                          example: '50.380,90'
-                        institutionName:
-                          type: string
-                          nullable: true
-                          example: 'Sandbox Finance'
-                        institutionLogo:
-                          type: string
-                          nullable: true
-                          example: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png'
-                        lastSyncedAt:
-                          type: string
-                          format: date-time
-                          example: '2024-08-31 13:00:50.375'
+                    type: object
+                    required:
+                      - accounts
+                    properties:
+                      accounts:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - name
+                            - iban
+                            - balance
+                            - institutionName
+                            - institutionLogo
+                            - lastSyncedAt
+                          properties:
+                            id:
+                              type: string
+                              example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+                            name:
+                              type: string
+                              nullable: true
+                              example: 'Account Name'
+                            iban:
+                              type: string
+                              nullable: true
+                              example: 'DK4404005032950081'
+                            balance:
+                              type: string
+                              example: '50.380,90'
+                            institutionName:
+                              type: string
+                              nullable: true
+                              example: 'Sandbox Finance'
+                            institutionLogo:
+                              type: string
+                              nullable: true
+                              example: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png'
+                            lastSyncedAt:
+                              type: string
+                              format: date-time
+                              example: '2024-08-31 13:00:50.375'
         '500':
           description: Server Error
           content:
@@ -751,6 +761,9 @@ paths:
       operationId: syncAccountTransactions
       tags:
         - Accounts API
+
+      security:
+        - APIKey: []
       parameters:
         - in: query
           name: admin_key
@@ -807,3 +820,8 @@ components:
         - Food & Groceries
         - Utilities
         - Transfers
+  securitySchemes:
+    APIKey:
+      type: apiKey
+      in: query
+      name: admin_key
