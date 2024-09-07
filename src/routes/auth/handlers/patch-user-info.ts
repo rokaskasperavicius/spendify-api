@@ -22,7 +22,7 @@ export const patchUserInfo = async (req: ServerRequest<Request['body']>, res: Se
 
   // User with that email already exists
   if (user && userId !== user.id) {
-    throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.INVALID_CREDENTIALS)
+    throw new ServerError(StatusCodes.CONFLICT, ERROR_CODES.USER_EXISTS)
   }
 
   await prisma.users.update({

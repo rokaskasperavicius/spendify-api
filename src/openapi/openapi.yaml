@@ -1,0 +1,827 @@
+openapi: 3.0.1
+
+info:
+  version: 1.0.0
+  title: Spendify API Specification
+
+servers:
+  - url: https://api.spendify.dk/v1
+    description: Main (production) server
+  - url: http://localhost:8080/v1
+    description: Local (development) server
+
+paths:
+  /auth/login:
+    post:
+      summary: Login the User
+      operationId: loginUser
+      tags:
+        - Auth API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: 'name@gmail.com'
+                password:
+                  type: string
+                  format: password
+                  example: 'password'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - user
+                    properties:
+                      user:
+                        type: object
+                        required:
+                          - email
+                          - name
+                        properties:
+                          email:
+                            type: string
+                            format: email
+                            example: 'name@gmail.com'
+                          name:
+                            type: string
+                            example: 'name'
+        '400':
+          description: Wrong Credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                success: false
+                code: INVALID_CREDENTIALS
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/register:
+    post:
+      summary: Register the User
+      operationId: registerUser
+      tags:
+        - Auth API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: 'name'
+                email:
+                  type: string
+                  format: email
+                  example: 'name@gmail.com'
+                password:
+                  type: string
+                  format: password
+                  example: 'password'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: User with the same email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                success: false
+                code: USER_EXISTS
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/destroy-session:
+    delete:
+      summary: Request to Destroy User Session
+      operationId: destroyUserSession
+      tags:
+        - Auth API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sessionId
+              properties:
+                sessionId:
+                  type: string
+                  example: '012c8134-ca32-4120-8714-0db5c12f66fc'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/log-out:
+    post:
+      summary: Logout User
+      description: Logout the user from the system and delete the attached cookie
+      operationId: logoutUser
+      tags:
+        - Auth API
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/sessions:
+    get:
+      summary: Get User's Sessions
+      operationId: userSessions
+      tags:
+        - Auth API
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - isCurrent
+                      - sessionId
+                      - ipAddress
+                      - ipLocation
+                    properties:
+                      isCurrent:
+                        type: string
+                        example: true
+                      sessionId:
+                        type: string
+                        example: '012c8134-ca32-4120-8714-0db5c12f66fc'
+                      ipAddress:
+                        type: string
+                        example: '192.168.1.1'
+                      ipLocation:
+                        type: string
+                        example: 'Denmark, Copenhagen'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/user-info:
+    patch:
+      summary: Patch User's Information
+      operationId: patchUserInfo
+      tags:
+        - Auth API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  example: 'name'
+                email:
+                  type: string
+                  format: email
+                  example: 'name@gmail.com'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - name
+                      - email
+                    properties:
+                      name:
+                        type: string
+                        example: 'name'
+                      email:
+                        type: string
+                        format: email
+                        example: 'name@gmail.com'
+        '400':
+          description: User with the same email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                - success: false
+                  code: USER_EXISTS
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/user-password:
+    patch:
+      summary: Patch User's Password
+      operationId: patchUserPassword
+      tags:
+        - Auth API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                  format: password
+                  example: 'weak-password'
+                newPassword:
+                  type: string
+                  format: password
+                  example: 'very-strong-password'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Wrong Old Password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                success: false
+                code: INVALID_CREDENTIALS
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/institutions:
+    get:
+      summary: Get all Institutions
+      operationId: getInstitutions
+      tags:
+        - Accounts API
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: The query to search among institution names
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - logo
+                      properties:
+                        id:
+                          type: string
+                          example: 'SANDBOXFINANCE_SFIN0000'
+                        name:
+                          type: string
+                          example: 'Sandbox Finance'
+                        logo:
+                          type: string
+                          example: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/create-requisition:
+    post:
+      summary: Create a Requisition Request
+      operationId: createRequisition
+      tags:
+        - Accounts API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - institutionId
+                - redirect
+              properties:
+                institutionId:
+                  type: string
+                  example: 'SANDBOXFINANCE_SFIN0000'
+                redirect:
+                  type: string
+                  example: 'https://www.spendify.dk/link-account'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - url
+                    properties:
+                      url:
+                        type: string
+                        example: 'https://ob.gocardless.com/psd2/start/3fa85f64-5717-4562-b3fc-2c963f66afa6/{$INSTITUTION_ID}'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/available/{requisitionId}:
+    get:
+      summary: Get Available Accounts
+      operationId: getAvailableAccounts
+      tags:
+        - Accounts API
+      parameters:
+        - in: path
+          name: requisitionId
+          required: true
+          schema:
+            type: string
+          description: The requisition approved by the user
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - accountId
+                        - accountBalance
+                        - institutionLogo
+                      properties:
+                        accountId:
+                          type: string
+                          example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+                        accountName:
+                          type: string
+                          example: 'Account Name'
+                        accountIban:
+                          type: string
+                          example: 'DK4404005032950081'
+                        accountBalance:
+                          type: string
+                          example: '50.380,90'
+                        institutionLogo:
+                          type: string
+                          example: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts:
+    get:
+      summary: Get User's Accounts
+      operationId: getUsersAccounts
+      tags:
+        - Accounts API
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - accounts
+                    properties:
+                      accounts:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - name
+                            - iban
+                            - balance
+                            - institutionName
+                            - institutionLogo
+                            - lastSyncedAt
+                          properties:
+                            id:
+                              type: string
+                              example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+                            name:
+                              type: string
+                              nullable: true
+                              example: 'Account Name'
+                            iban:
+                              type: string
+                              nullable: true
+                              example: 'DK4404005032950081'
+                            balance:
+                              type: string
+                              example: '50.380,90'
+                            institutionName:
+                              type: string
+                              nullable: true
+                              example: 'Sandbox Finance'
+                            institutionLogo:
+                              type: string
+                              nullable: true
+                              example: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png'
+                            lastSyncedAt:
+                              type: string
+                              format: date-time
+                              example: '2024-08-31 13:00:50.375'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      summary: Create User's Account
+      description: Create a new account for the user and sync the transactions to the database
+      operationId: createUsersAccount
+      tags:
+        - Accounts API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountId
+              properties:
+                accountId:
+                  type: string
+                  example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      summary: Delete User's Account
+      operationId: deleteUsersAccount
+      tags:
+        - Accounts API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountId
+              properties:
+                accountId:
+                  type: string
+                  example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/{accountId}/transactions:
+    get:
+      summary: Get Account Transactions
+      operationId: getAccountTransactions
+      tags:
+        - Accounts API
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+          description: User's Account ID
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: The query to search among transaction names
+        - in: query
+          name: category
+          schema:
+            $ref: '#/components/schemas/Categories'
+          description: Category to filter transactions
+        - in: query
+          name: from
+          schema:
+            format: date-time
+            type: string
+        - in: query
+          name: to
+          schema:
+            format: date-time
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - title
+                        - weight
+                        - amount
+                        - totalAmount
+                        - amountInt
+                        - totalAmountInt
+                        - category
+                        - date
+                      properties:
+                        id:
+                          type: string
+                          example: '50092050006000@YEDLE167@2024-08-27@2024-08-27-03.23.07.019118'
+                        title:
+                          type: string
+                          example: 'KVICKLY SUNDBY, KOEBENHAVN S Notanr 42215'
+                        weight:
+                          type: integer
+                          example: 10
+                        amount:
+                          type: string
+                          example: '-55,95'
+                        totalAmount:
+                          description: Total balance left after the transaction
+                          type: string
+                          example: '50.380,90'
+                        totalAmountInt:
+                          type: number
+                          example: 50380.9
+                        category:
+                          $ref: '#/components/schemas/Categories'
+                          example: 'Food & Groceries'
+                        date:
+                          type: string
+                          format: date-time
+                          example: '2024-08-27 00:00:00'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/{accountId}/transactions/grouped:
+    get:
+      summary: Get Account Grouped Transactions
+      operationId: getAccountGroupedTransactions
+      tags:
+        - Accounts API
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+          description: User's Account ID
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                required:
+                  - data
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - date
+                        - expenses
+                        - expensesInt
+                        - income
+                        - incomeInt
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: 'September, 2024'
+                        expenses:
+                          type: string
+                          example: '10.979,45'
+                        expensesInt:
+                          type: number
+                          example: 10979.45
+                        income:
+                          type: string
+                          example: '12.627,45'
+                        incomeInt:
+                          type: number
+                          example: 12627.45
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/transactions/sync:
+    get:
+      summary: Get Account Transactions
+      operationId: syncAccountTransactions
+      tags:
+        - Accounts API
+
+      security:
+        - APIKey: []
+      parameters:
+        - in: query
+          name: admin_key
+          required: true
+          schema:
+            type: string
+          description: SYNC_ADMIN_KEY
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          example: true
+    ApiError:
+      type: object
+      required:
+        - success
+        - code
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          $ref: '#/components/schemas/ErrorCodes'
+    ErrorCodes:
+      type: string
+      enum:
+        - UNKNOWN
+        - INVALID_CREDENTIALS
+        - USER_EXISTS
+        - DUPLICATE_ACCOUNTS
+        - INVALID_SCHEMA
+        - UNAUTHORIZED
+    Categories:
+      type: string
+      enum:
+        - Food & Groceries
+        - Utilities
+        - Transfers
+  securitySchemes:
+    APIKey:
+      type: apiKey
+      in: query
+      name: admin_key

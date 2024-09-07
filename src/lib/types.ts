@@ -2,10 +2,12 @@ import { Request, Response } from 'express'
 import { Send } from 'express-serve-static-core'
 
 export enum ERROR_CODES {
-  UNKNOWN = -1,
-  INVALID_CREDENTIALS = 1,
-  DUPLICATE_ACCOUNTS = 2,
-  INVALID_SCHEMA = 3,
+  UNKNOWN = 'UNKNOWN',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  USER_EXISTS = 'USER_EXISTS',
+  DUPLICATE_ACCOUNTS = 'DUPLICATE_ACCOUNTS',
+  INVALID_SCHEMA = 'INVALID_SCHEMA',
+  UNAUTHORIZED = 'UNAUTHORIZED',
 }
 
 export class ServerError extends Error {

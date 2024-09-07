@@ -18,3 +18,4 @@ export const GOCARDLESS_SANDBOX_INSTITUTION_ID = 'SANDBOXFINANCE_SFIN0000'
 // Other
 export const GOCARDLESS_CURRENCY = { symbol: '', separator: '', decimal: '.' }
 export const FORMATTED_CURRENCY = { symbol: '', decimal: ',', separator: '.' }
+export const PASSWORD_SALT_ROUNDS = 12

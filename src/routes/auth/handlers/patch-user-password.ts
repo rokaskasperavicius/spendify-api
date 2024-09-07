@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 
+import { PASSWORD_SALT_ROUNDS } from '@/lib/constants'
 import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import prisma from '@/services/prisma'
@@ -33,7 +34,7 @@ export const patchUserPassword = async (req: ServerRequest<Request['body']>, res
     throw new ServerError(StatusCodes.BAD_REQUEST, ERROR_CODES.INVALID_CREDENTIALS)
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 12)
+  const hashedPassword = await bcrypt.hash(newPassword, PASSWORD_SALT_ROUNDS)
 
   await prisma.users.update({
     where: { id: userId },
