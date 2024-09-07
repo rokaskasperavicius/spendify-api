@@ -64,7 +64,6 @@ export const loginUser = async (req: ServerRequest<Request['body']>, res: Server
   })
 
   res.cookie('session', sessionToken, {
-    domain: NODE_ENV === 'production' ? 'spendify.dk' : undefined,
     path: '/',
     httpOnly: true,
     secure: true,
