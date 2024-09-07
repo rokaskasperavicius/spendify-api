@@ -4,6 +4,7 @@ import 'dotenv/config'
 import express, { NextFunction, Request, Response } from 'express'
 import 'express-async-errors'
 import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
 import { StatusCodes } from 'http-status-codes'
 import { setupServer } from 'msw/node'
 import schedule from 'node-schedule'
@@ -24,7 +25,9 @@ const swaggerDocument = YAML.load('./src/openapi/openapi.yaml')
 // Setup
 const server = setupServer(...handlers)
 const app = express()
+app.disable('x-powered-by')
 app.use(express.json())
+app.use(helmet())
 app.use(cookieParser(COOKIE_SECRET))
 
 if (NODE_ENV === 'development') {
@@ -56,7 +59,7 @@ app.use(cors(corsOptions))
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minutes
-  max: 30, // Limit each IP to 30 requests per `window` (here, per 1 minutes)
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 1 minutes)
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
@@ -98,6 +101,12 @@ schedule.scheduleJob('0 3,15 * * *', async () => {
   }
 })
 app.use('/favicon.ico', express.static('public/favicon.png'))
+
+// custom 404
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((req, res, next) => {
+  res.status(404).send("Sorry can't find that!")
+})
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
