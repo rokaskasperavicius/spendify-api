@@ -198,25 +198,27 @@ paths:
                   - $ref: '#/components/schemas/ApiResponse'
                 properties:
                   data:
-                    type: object
-                    required:
+                    type: array
+                    items:
+                      type: object
+                      required:
                       - isCurrent
                       - sessionId
                       - ipAddress
                       - ipLocation
-                    properties:
-                      isCurrent:
-                        type: string
-                        example: true
-                      sessionId:
-                        type: string
-                        example: '012c8134-ca32-4120-8714-0db5c12f66fc'
-                      ipAddress:
-                        type: string
-                        example: '192.168.1.1'
-                      ipLocation:
-                        type: string
-                        example: 'Denmark, Copenhagen'
+                      properties:
+                        isCurrent:
+                          type: string
+                          example: true
+                        sessionId:
+                          type: string
+                          example: '012c8134-ca32-4120-8714-0db5c12f66fc'
+                        ipAddress:
+                          type: string
+                          example: '192.168.1.1'
+                        ipLocation:
+                          type: string
+                          example: 'Denmark, Copenhagen'
         '500':
           description: Server Error
           content:
