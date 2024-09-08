@@ -34,9 +34,8 @@ model Transactions {
 }
 
 model Sessions {
-  id            Int      @id @default(autoincrement())
-  user_id       Int
   session_token String   @unique
+  user_id       Int
   expires_at    DateTime
   ip_address    String
   ip_location   String

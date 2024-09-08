@@ -7,7 +7,7 @@ export const logOut = async (req: ServerRequest, res: ServerResponse) => {
 
   // If the sessionToken is undefined, prisma deletes all sessions. Thanks prisma :)
   if (sessionToken) {
-    await prisma.sessions.deleteMany({
+    await prisma.sessions.delete({
       where: {
         session_token: sessionToken,
       },
