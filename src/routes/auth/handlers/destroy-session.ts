@@ -15,7 +15,7 @@ type Request = z.infer<typeof DestroySessionSchema>
 export const destroySession = async (req: ServerRequest<Request['body']>, res: ServerResponse) => {
   const { sessionId } = req.body
 
-  await prisma.sessions.deleteMany({
+  await prisma.sessions.delete({
     where: {
       session_token: sessionId,
     },
