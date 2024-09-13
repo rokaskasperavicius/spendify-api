@@ -8,15 +8,15 @@ import { ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
 import prisma from '@/services/prisma'
 
-export const GetAccountTransactionsGroupedSchema = z.object({
+export const GetAccountTransactionsMonthlyOverview = z.object({
   params: z.object({
     accountId: z.string(),
   }),
 })
 
-type Request = z.infer<typeof GetAccountTransactionsGroupedSchema>
+type Request = z.infer<typeof GetAccountTransactionsMonthlyOverview>
 
-type ReducedGroupedTransactions = {
+type ReducedTransactionMonthlyOverview = {
   date: string
   expenses: string
   income: string
@@ -24,7 +24,7 @@ type ReducedGroupedTransactions = {
   incomeInt: number
 }
 
-export const getAccountTransactionsGrouped = async (
+export const getAccountTransactionsMonthlyOverview = async (
   req: ServerRequest<unknown, Request['params']>,
   res: ServerResponse
 ) => {
@@ -56,14 +56,16 @@ export const getAccountTransactionsGrouped = async (
     },
   })
 
-  const groupedTransactions = groupBy(transactions, (transaction) => format(new Date(transaction.date), 'MMMM, yyyy'))
+  const groupedTransactionsByMonth = groupBy(transactions, (transaction) =>
+    format(new Date(transaction.date), 'MMMM, yyyy')
+  )
 
-  const reducedTransactions = Object.keys(groupedTransactions).reduce(
-    (acc: Array<ReducedGroupedTransactions>, value) => {
+  const reducedTransactions = Object.keys(groupedTransactionsByMonth).reduce(
+    (acc: Array<ReducedTransactionMonthlyOverview>, value) => {
       let expenses = 0
       let income = 0
 
-      groupedTransactions[value]?.forEach((transaction) => {
+      groupedTransactionsByMonth[value]?.forEach((transaction) => {
         const amount = gocardlessCurrency(transaction.amount).value
 
         if (amount < 0) {

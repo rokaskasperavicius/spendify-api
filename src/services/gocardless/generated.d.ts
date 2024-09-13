@@ -320,35 +320,6 @@ export interface components {
             booked: components["schemas"]["TransactionSchema"][];
             pending?: components["schemas"]["TransactionSchema"][];
         };
-        /** @description Creditor account read serializer. */
-        CreditorAccount: {
-            /**
-             * Format: uuid
-             * @description Unique entry ID
-             */
-            readonly id?: string;
-            /** @description Creditor account name */
-            name: string;
-            /**
-             * @description Creditor account type
-             *
-             *     * `IBAN` - IBAN
-             *     * `SCAN` - SortCodeAccountNumber
-             *     * `BBAN` - BBAN
-             * @default IBAN
-             */
-            type: components["schemas"]["TypeEnum"];
-            /** @description Creditor account type identifier */
-            account: string;
-            /** @description Creditor account currency */
-            currency: string;
-            /** @description Creditor account address country */
-            address_country?: string;
-            /** @description Creditor account address town */
-            address_town?: string;
-            /** @description Creditor account address building number */
-            address_building?: string;
-        };
         /** @description CurrencyExchangeSchema. */
         CurrencyExchangeSchema: {
             /** @description sourceCurrency */
@@ -539,7 +510,7 @@ export interface components {
         };
         PaginatedEndUserAgreementList: {
             /** @example 123 */
-            count?: number;
+            count: number;
             /**
              * Format: uri
              * @example https://bankaccountdata.gocardless.com/api/v2/agreements/enduser/?limit=100&offset=0
@@ -550,11 +521,11 @@ export interface components {
              * @example https://bankaccountdata.gocardless.com/api/v2/agreements/enduser/?limit=100&offset=0
              */
             previous?: string | null;
-            results?: components["schemas"]["EndUserAgreement"][];
+            results: components["schemas"]["EndUserAgreement"][];
         };
         PaginatedRequisitionList: {
             /** @example 123 */
-            count?: number;
+            count: number;
             /**
              * Format: uri
              * @example https://bankaccountdata.gocardless.com/api/v2/requisitions/?limit=100&offset=0
@@ -565,7 +536,7 @@ export interface components {
              * @example https://bankaccountdata.gocardless.com/api/v2/requisitions/?limit=100&offset=0
              */
             previous?: string | null;
-            results?: components["schemas"]["Requisition"][];
+            results: components["schemas"]["Requisition"][];
         };
         /** @description RequisitionSerializer. */
         Requisition: {
@@ -797,13 +768,6 @@ export interface components {
             /** @description internalTransactionId */
             internalTransactionId?: string;
         };
-        /**
-         * @description * `IBAN` - IBAN
-         *     * `SCAN` - SortCodeAccountNumber
-         *     * `BBAN` - BBAN
-         * @enum {string}
-         */
-        TypeEnum: "IBAN" | "SCAN" | "BBAN";
     };
     responses: never;
     parameters: never;
