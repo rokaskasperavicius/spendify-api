@@ -45,7 +45,7 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     last_synced: new Date(),
   }
 
-  // Does not allow multiple users in one account
+  // TODO: Does not allow multiple users in one account
   await prisma.accounts.upsert({
     where: {
       id: accountId,

@@ -700,10 +700,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-  /accounts/{accountId}/transactions/grouped:
+  /accounts/{accountId}/transactions/monthly-overview:
     get:
-      summary: Get Account Grouped Transactions
-      operationId: getAccountGroupedTransactions
+      summary: Get Account Transactions' Monthly Overview
+      operationId: getAccountTransactionsMonthlyOverview
       tags:
         - Accounts API
       parameters:
