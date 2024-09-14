@@ -5,8 +5,8 @@
 - PostgreSQL 16
 
 ### Setup
-  1. `git clone git@github.com:rokaskasperavicius/spendify-server.git`
-  2. `cd spendify-server`
+  1. `git clone git@github.com:rokaskasperavicius/spendify-api.git`
+  2. `cd spendify-api`
   3. `nvm use` or `nvm install`
   4. `npm install`
   5. `npm run dotenv-pull`
