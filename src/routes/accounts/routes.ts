@@ -10,7 +10,7 @@ import { GetAccountTransactionsSchema, getAccountTransactions } from './handlers
 import {
   GetAccountTransactionsMonthlyOverview,
   getAccountTransactionsMonthlyOverview,
-} from './handlers/get-account-transactions-monhtly-overview'
+} from './handlers/get-account-transactions-monthly-overview'
 import { getAccounts } from './handlers/get-accounts'
 import { GetAvailableAccountsSchema, getAvailableAccounts } from './handlers/get-available-accounts'
 import { SyncAccountTransactionsSchema, syncAccountTransactions } from './handlers/sync-account-transactions'

@@ -83,6 +83,9 @@ export const getAccountTransactions = async (
 
   transactions = transactions.filter((transaction) => !category || transaction.category === category)
 
+  // sort by weight in descending order
+  transactions.sort((result, next) => result.weight - next.weight)
+
   res.json({
     success: true,
     data: transactions.map((transaction) => ({
