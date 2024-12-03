@@ -23,9 +23,8 @@ export type AccountDetails =
 export type AccountBalance =
   paths['/api/v2/accounts/{id}/balances/']['get']['responses'][200]['content']['application/json']
 
-export type AccountTransactions = {
-  transactions: paths['/api/v2/accounts/{id}/transactions/']['get']['responses'][200]['content']['application/json']
-}
+export type AccountTransactions =
+  paths['/api/v2/accounts/{id}/transactions/']['get']['responses'][200]['content']['application/json']
 
 export type BookedTransaction = AccountTransactions['transactions']['booked'][0]
 export type FormattedTransaction = Omit<BookedTransaction, 'valueDate' | 'transactionId'> & {

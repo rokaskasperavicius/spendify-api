@@ -45,13 +45,18 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     last_synced: new Date(),
   }
 
-  // TODO: Does not allow multiple users in one account
   await prisma.accounts.upsert({
     where: {
       id: accountId,
     },
     update: {
       ...dataToInsert,
+
+      users: {
+        connect: {
+          id: userId,
+        },
+      },
     },
     create: {
       id: accountId,
@@ -69,7 +74,7 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
   const { data } = await getAccountTransactionsById(accountId)
 
   // Reversing is important because we want to insert the oldest transactions first
-  // This way the database will have autoincremented ids that we can use as the sorting weight
+  // This way the database will have autoincremented IDs that we can use as the sorting weight
   const transformed = transformTransactions(data.transactions.booked, totalBalance).reverse()
 
   const result = await prisma.transactions.createMany({

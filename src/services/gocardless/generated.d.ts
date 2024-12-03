@@ -89,7 +89,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description API endpoints related to end-user agreements. */
+        /** @description Overwrite pagination to map CONN consent data with end user agreements.
+         *
+         *     Args:
+         *         request (HttpRequest): Request
+         *
+         *     Returns:
+         *         HttpResponse: Response */
         get: operations["retrieve all EUAs for an end user"];
         put?: never;
         /** @description API endpoints related to end-user agreements. */
@@ -262,6 +268,8 @@ export interface components {
             readonly last_accessed?: string;
             /** @description The Account IBAN */
             readonly iban?: string;
+            /** @description The Account BBAN */
+            readonly bban?: string;
             /** @description The processing status of this account. */
             readonly status?: string;
             /** @description The ASPSP associated with this account. */
@@ -292,6 +300,11 @@ export interface components {
             msisdn?: string;
             /** @description currency */
             currency?: string;
+        };
+        /** @description AccountTransactionsSerializer. */
+        AccountTransactions: {
+            /** @description transactions */
+            transactions: components["schemas"]["BankTransaction"];
         };
         /** @description BalanceAmountSchema. */
         BalanceAmountSchema: {
@@ -343,6 +356,8 @@ export interface components {
             iban?: string;
             /** @description bban */
             bban?: string;
+            /** @description SortCodeAccountNumber returned by some UK banks (6 digit Sort Code and 8 digit Account Number) */
+            scan?: string;
             /** @description msisdn */
             msisdn?: string;
             /** @description currency */
@@ -466,6 +481,7 @@ export interface components {
             bic?: string;
             /** @default 90 */
             transaction_total_days: string;
+            max_access_valid_for_days?: string;
             countries: string[];
             logo: string;
         };
@@ -476,6 +492,7 @@ export interface components {
             bic?: string;
             /** @default 90 */
             transaction_total_days: string;
+            max_access_valid_for_days?: string;
             countries: string[];
             logo: string;
             supported_payments: {
@@ -873,7 +890,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description AccountAccessForbidden */
+            /** @description AccountResourceUnavailable */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -967,7 +984,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description AccountAccessForbidden */
+            /** @description AccountResourceUnavailable */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1043,7 +1060,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BankTransaction"];
+                    "application/json": components["schemas"]["AccountTransactions"];
                 };
             };
             /** @description Incorrect date range in query parameters */
@@ -1064,7 +1081,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description AccountAccessForbidden */
+            /** @description AccountResourceUnavailable */
             403: {
                 headers: {
                     [name: string]: unknown;
