@@ -50,7 +50,9 @@ export const loginUser = async (req: ServerRequest<Request['body']>, res: Server
     ipLocation = `${ipData.country}, ${ipData.city}`
   }
 
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 1 week expiration
+  const expiresAt = new Date()
+  expiresAt.setMonth(expiresAt.getMonth() + 1) // 1 month expiration
+
   const sessionToken = crypto.randomUUID()
 
   await prisma.sessions.create({
