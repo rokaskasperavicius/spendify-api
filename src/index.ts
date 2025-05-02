@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { setupServer } from 'msw/node'
 import schedule from 'node-schedule'
 
-import { NODE_ENV } from '@/lib/constants'
+import { MOCKS_ENABLED, NODE_ENV } from '@/lib/constants'
 
 import { handlers } from '@/mocks/handlers'
 
@@ -12,7 +12,7 @@ import { syncTransactions } from './lib/utils/sync-transactions'
 // MSW setup
 const server = setupServer(...handlers)
 
-if (NODE_ENV === 'development') {
+if (NODE_ENV === 'development' && MOCKS_ENABLED === 'true') {
   server.listen({
     // This is going to perform unhandled requests
     // but print no warning whatsoever when they happen.

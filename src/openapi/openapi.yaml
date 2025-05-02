@@ -562,10 +562,14 @@ paths:
               type: object
               required:
                 - accountId
+                - requisitionId
               properties:
                 accountId:
                   type: string
                   example: 'bbcdb297-acce-4d4a-8678-8344ee92d195'
+                requisitionId:
+                  type: string
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
       responses:
         '200':
           description: Success

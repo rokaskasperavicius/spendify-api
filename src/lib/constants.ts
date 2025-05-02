@@ -1,5 +1,6 @@
 // Global
 export const NODE_ENV = process.env.NODE_ENV as string
+export const MOCKS_ENABLED = process.env.MOCKS_ENABLED as string
 export const DATABASE_URL = process.env.DATABASE_URL as string
 export const COOKIE_SECRET = process.env.COOKIE_SECRET as string
 export const SYNC_ADMIN_KEY = process.env.SYNC_ADMIN_KEY as string
