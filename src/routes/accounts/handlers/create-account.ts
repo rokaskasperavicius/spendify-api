@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { ServerRequest, ServerResponse } from '@/lib/types'
+import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import {
   getAccountBalanceById,
@@ -8,6 +8,7 @@ import {
   getAccountMetadata,
   getAccountTransactionsById,
   getInstitutionById,
+  getRequisitionById,
 } from '@/services/gocardless/api'
 import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
 import { transformTransactions } from '@/services/gocardless/utils/transform-transactions'
@@ -16,22 +17,31 @@ import prisma from '@/services/prisma'
 export const CreateAccountSchema = z.object({
   body: z.object({
     accountId: z.string(),
+    requisitionId: z.string(),
   }),
 })
 
 type Request = z.infer<typeof CreateAccountSchema>
 
 export const createAccount = async (req: ServerRequest<Request['body']>, res: ServerResponse) => {
-  const { accountId } = req.body
+  const { accountId, requisitionId } = req.body
   const { userId } = res.locals
 
+  // Check that accountId belongs to the requisitionId
+  const { data: accounts } = await getRequisitionById(requisitionId)
+  const belongsToRequisition = accounts.accounts?.some((account) => account === accountId)
+
+  if (!belongsToRequisition) {
+    throw new ServerError(400, ERROR_CODES.WRONG_ACCOUNT)
+  }
+
+  const { data: metadata } = await getAccountMetadata(accountId)
   const {
     data: { account: details },
   } = await getAccountDetailsById(accountId)
   const {
     data: { balances },
   } = await getAccountBalanceById(accountId)
-  const { data: metadata } = await getAccountMetadata(accountId)
   const { data: institution } = await getInstitutionById(String(metadata.institution_id))
 
   const totalBalance = gocardlessCurrency(balances && balances[0]?.balanceAmount.amount).value
@@ -42,6 +52,7 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     balance: totalBalance,
     institution_name: institution.name,
     institution_logo: institution.logo,
+    requisitionId: requisitionId,
     last_synced: new Date(),
   }
 

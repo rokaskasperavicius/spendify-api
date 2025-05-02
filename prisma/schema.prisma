@@ -15,6 +15,7 @@ model Accounts {
   iban             String?
   institution_name String?
   institution_logo String?
+  requisitionId    String?
   last_synced      DateTime
 
   users        Users[]
