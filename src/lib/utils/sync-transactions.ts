@@ -1,5 +1,4 @@
-import formatISO from 'date-fns/formatISO'
-import subDays from 'date-fns/subDays'
+import { formatISO, subDays } from 'date-fns'
 
 import { getAccountBalanceById, getAccountTransactionsById } from '@/services/gocardless/api'
 import { gocardlessCurrency } from '@/services/gocardless/utils/currency'

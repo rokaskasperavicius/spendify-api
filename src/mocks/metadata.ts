@@ -4,6 +4,6 @@ export const metadata = {
   last_accessed: '2024-08-27T22:52:59.109617Z',
   iban: 'DK4404005032950081',
   institution_id: 'LAN_AND_SPAR_BANK_AS_LOSADKKK',
-  status: 'READY',
+  status: 'READY', // Can be "EXPIRED"
   owner_name: 'Mock Name',
 }

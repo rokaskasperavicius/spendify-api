@@ -25,7 +25,7 @@ type Request = z.infer<typeof GetAccountTransactionsSchema>
 
 export const getAccountTransactions = async (
   req: ServerRequest<object, Request['params'], Request['query']>,
-  res: ServerResponse
+  res: ServerResponse,
 ) => {
   const { accountId } = req.params
   const { search, category, from, to } = req.query

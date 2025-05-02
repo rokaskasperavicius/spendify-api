@@ -26,7 +26,7 @@ type ReducedTransactionMonthlyOverview = {
 
 export const getAccountTransactionsMonthlyOverview = async (
   req: ServerRequest<unknown, Request['params']>,
-  res: ServerResponse
+  res: ServerResponse,
 ) => {
   const { accountId } = req.params
 
@@ -57,7 +57,7 @@ export const getAccountTransactionsMonthlyOverview = async (
   })
 
   const groupedTransactionsByMonth = groupBy(transactions, (transaction) =>
-    format(new Date(transaction.date), 'MMMM, yyyy')
+    format(new Date(transaction.date), 'MMMM, yyyy'),
   )
 
   const reducedTransactions = Object.keys(groupedTransactionsByMonth).reduce(
@@ -86,7 +86,7 @@ export const getAccountTransactionsMonthlyOverview = async (
 
       return acc
     },
-    []
+    [],
   )
 
   res.json({

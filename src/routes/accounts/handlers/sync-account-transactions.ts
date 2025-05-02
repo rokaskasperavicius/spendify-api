@@ -17,7 +17,7 @@ type Request = z.infer<typeof SyncAccountTransactionsSchema>
  */
 export const syncAccountTransactions = async (
   req: ServerRequest<object, object, Request['query']>,
-  res: ServerResponse
+  res: ServerResponse,
 ) => {
   const { admin_key } = req.query
 

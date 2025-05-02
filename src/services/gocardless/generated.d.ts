@@ -89,14 +89,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Overwrite pagination to map CONN consent data with end user agreements.
-         *
-         *     Args:
-         *         request (HttpRequest): Request
-         *
-         *     Returns:
-         *         HttpResponse: Response */
-        get: operations["retrieve all EUAs for an end user"];
+        /** @description Retrieve all End User Agreements belonging to the company */
+        get: operations["retrieve all agreements"];
         put?: never;
         /** @description API endpoints related to end-user agreements. */
         post: operations["create EUA"];
@@ -276,6 +270,8 @@ export interface components {
             readonly institution_id?: string;
             /** @description The name of the account owner. */
             readonly owner_name?: string;
+            /** @description The name of account. */
+            readonly name?: string;
         };
         /** @description AccountBalanceSerializer. */
         AccountBalance: {
@@ -305,6 +301,18 @@ export interface components {
         AccountTransactions: {
             /** @description transactions */
             transactions: components["schemas"]["BankTransaction"];
+        };
+        /** @description AdditionalAccountDataSchema. */
+        AdditionalAccountDataSchema: {
+            /** @description secondaryIdentification */
+            secondaryIdentification?: string;
+        };
+        /** @description BalanceAfterTransactionSchema. */
+        BalanceAfterTransactionSchema: {
+            /** @description amount */
+            amount: string;
+            /** @description currency */
+            currency?: string;
         };
         /** @description BalanceAmountSchema. */
         BalanceAmountSchema: {
@@ -388,6 +396,8 @@ export interface components {
             ownerAddressUnstructured?: string[];
             /** @description ownerAddressStructured */
             ownerAddressStructured?: components["schemas"]["OwnerAddressStructuredSchema"];
+            /** @description additionalAccountData used for information that is outside of Berlin Group specification, such as bank or country-specific fields */
+            additionalAccountData?: components["schemas"]["AdditionalAccountDataSchema"];
         };
         /** @description Represents an end-user agreement. */
         EndUserAgreement: {
@@ -495,9 +505,6 @@ export interface components {
             max_access_valid_for_days?: string;
             countries: string[];
             logo: string;
-            supported_payments: {
-                [key: string]: unknown;
-            };
             supported_features: unknown[];
             identification_codes: unknown[];
         };
@@ -591,7 +598,7 @@ export interface components {
             /**
              * Format: uri
              * @description link to initiate authorization with Institution
-             * @default https://ob.gocardless.com/psd2/start/3fa85f64-5717-4562-b3fc-2c963f66afa6/{$INSTITUTION_ID}
+             * @default https://ob.gocardless.com/psd2/start/3fa85f64-5717-4562-b3fc-2c963f66afa6/SANDBOXFINANCE_SFIN0000
              */
             readonly link: string;
             /** @description optional SSN field to verify ownership of the account */
@@ -704,7 +711,7 @@ export interface components {
             /**
              * Format: uri
              * @description link to initiate authorization with Institution
-             * @default https://ob.gocardless.com/psd2/start/3fa85f64-5717-4562-b3fc-2c963f66afa6/{$INSTITUTION_ID}
+             * @default https://ob.gocardless.com/psd2/start/3fa85f64-5717-4562-b3fc-2c963f66afa6/SANDBOXFINANCE_SFIN0000
              */
             readonly link: string;
             /** @description optional SSN field to verify ownership of the account */
@@ -722,6 +729,10 @@ export interface components {
         };
         /** @enum {string} */
         StatusEnum: "CR" | "ID" | "LN" | "RJ" | "ER" | "SU" | "EX" | "GC" | "UA" | "GA" | "SA";
+        SuccessfulDeleteResponse: {
+            summary: string;
+            detail: string;
+        };
         /** @description TransactionAmountSchema. */
         TransactionAmountSchema: {
             /** @description amount */
@@ -784,6 +795,8 @@ export interface components {
             proprietaryBankTransactionCode?: string;
             /** @description internalTransactionId */
             internalTransactionId?: string;
+            /** @description balanceAfterTransaction */
+            balanceAfterTransaction?: components["schemas"]["BalanceAfterTransactionSchema"];
         };
     };
     responses: never;
@@ -841,7 +854,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1137,7 +1150,7 @@ export interface operations {
             };
         };
     };
-    "retrieve all EUAs for an end user": {
+    "retrieve all agreements": {
         parameters: {
             query?: {
                 /** @description Number of results to return per page. */
@@ -1187,7 +1200,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1258,7 +1271,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1326,7 +1339,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1349,6 +1362,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessfulDeleteResponse"];
+                };
+            };
             /** @description Invalid ID */
             400: {
                 headers: {
@@ -1385,7 +1406,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1468,7 +1489,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1494,10 +1515,6 @@ export interface operations {
                 corporate_accounts_supported?: string;
                 /** @description ISO 3166 two-character country code */
                 country?: string;
-                /** @description Boolean value, indicating if payment submission is supported */
-                payment_submission_supported?: string;
-                /** @description Boolean value, indicating if payments are supported */
-                payments_enabled?: string;
                 /** @description Boolean value, indicating if pending transactions are supported */
                 pending_transactions_supported?: string;
                 /** @description Boolean value, indicating if private accounts are supported */
@@ -1506,6 +1523,8 @@ export interface operations {
                 read_debtor_account_supported?: string;
                 /** @description Boolean value, indicating if read refund account is supported */
                 read_refund_account_supported?: string;
+                /** @description Boolean value, indicating if separate consent for continuous history is supported */
+                separate_continuous_history_consent_supported?: string;
                 /** @description Boolean value, indicating if ssn verification is supported */
                 ssn_verification_supported?: string;
             };
@@ -1560,7 +1579,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1618,7 +1637,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1688,7 +1707,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1768,7 +1787,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1836,7 +1855,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1859,6 +1878,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessfulDeleteResponse"];
+                };
+            };
             /** @description Invalid ID */
             400: {
                 headers: {
@@ -1895,7 +1922,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -1948,7 +1975,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -2001,7 +2028,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nordigen rate limit exceeded */
+            /** @description Rate limit exceeded */
             429: {
                 headers: {
                     [name: string]: unknown;

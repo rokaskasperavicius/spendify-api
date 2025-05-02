@@ -19,7 +19,7 @@ gocardlessApi.interceptors.request.use(
 
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 gocardlessApi.interceptors.response.use(
@@ -45,7 +45,7 @@ gocardlessApi.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export { gocardlessApi }
