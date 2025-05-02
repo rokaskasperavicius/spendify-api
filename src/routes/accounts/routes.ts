@@ -27,7 +27,7 @@ app.get(
   '/:accountId/transactions/monthly-overview',
   verifyUser,
   validateSchema(GetAccountTransactionsMonthlyOverview),
-  getAccountTransactionsMonthlyOverview
+  getAccountTransactionsMonthlyOverview,
 )
 app.delete('/', verifyUser, validateSchema(DeleteAccountSchema), deleteAccount)
 app.get('/transactions/sync', validateSchema(SyncAccountTransactionsSchema), syncAccountTransactions)

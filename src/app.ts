@@ -2,7 +2,6 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
 import express, { NextFunction, Request, Response } from 'express'
-import 'express-async-errors'
 import helmet from 'helmet'
 import { StatusCodes } from 'http-status-codes'
 import swaggerUi from 'swagger-ui-express'
@@ -42,7 +41,7 @@ app.use(
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Swagger',
     customfavIcon: '/favicon.ico',
-  })
+  }),
 )
 
 app.use('/favicon.ico', express.static('public/favicon.png'))
