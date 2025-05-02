@@ -511,7 +511,9 @@ paths:
                             - id
                             - name
                             - iban
+                            - status
                             - balance
+                            - institutionId
                             - institutionName
                             - institutionLogo
                             - lastSyncedAt
@@ -523,6 +525,9 @@ paths:
                               type: string
                               nullable: true
                               example: 'Account Name'
+                            status:
+                              nullable: true
+                              $ref: '#/components/schemas/AccountStatuses'
                             iban:
                               type: string
                               nullable: true
@@ -530,6 +535,10 @@ paths:
                             balance:
                               type: string
                               example: '50.380,90'
+                            institutionId:
+                              type: string
+                              nullable: true
+                              example: 'SANDBOXFINANCE_SFIN0000'
                             institutionName:
                               type: string
                               nullable: true
@@ -820,6 +829,11 @@ components:
         - DUPLICATE_ACCOUNTS
         - INVALID_SCHEMA
         - UNAUTHORIZED
+    AccountStatuses:
+      type: string
+      enum:
+        - READY
+        - EXPIRED
     Categories:
       type: string
       enum:
