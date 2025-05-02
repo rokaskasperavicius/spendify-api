@@ -21,19 +21,20 @@ export const getAccountInstitutions = async (
   const { data: institutions } = await getInstitutions()
   const { query } = req.query
 
-  const searchResults = query
-    ? fuzzysort.go(query, institutions, { key: 'name' }).map((search) => search.obj)
-    : institutions
-
   // Append Sandbox Institution
-  searchResults.push({
-    id: GOCARDLESS_SANDBOX_INSTITUTION_ID,
-    name: 'Sandbox Finance',
-    bic: 'SFIN0000',
-    transaction_total_days: '90',
-    countries: ['DK'],
-    logo: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png',
-  })
+  const results = [
+    ...institutions,
+    {
+      id: GOCARDLESS_SANDBOX_INSTITUTION_ID,
+      name: 'Sandbox Finance',
+      bic: 'SFIN0000',
+      transaction_total_days: '90',
+      countries: ['DK'],
+      logo: 'https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png',
+    },
+  ]
+
+  const searchResults = query ? fuzzysort.go(query, results, { key: 'name' }).map((search) => search.obj) : results
 
   res.json({
     success: true,
