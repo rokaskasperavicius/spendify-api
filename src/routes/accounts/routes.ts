@@ -13,6 +13,7 @@ import {
 } from './handlers/get-account-transactions-monthly-overview'
 import { getAccounts } from './handlers/get-accounts'
 import { GetAvailableAccountsSchema, getAvailableAccounts } from './handlers/get-available-accounts'
+import { SyncAccountStatusesSchema, syncAccountStatusesHandler } from './handlers/sync-account-statuses'
 import { SyncAccountTransactionsSchema, syncAccountTransactions } from './handlers/sync-account-transactions'
 
 const app = express.Router()
@@ -30,6 +31,7 @@ app.get(
   getAccountTransactionsMonthlyOverview,
 )
 app.delete('/', verifyUser, validateSchema(DeleteAccountSchema), deleteAccount)
+app.get('/sync', validateSchema(SyncAccountStatusesSchema), syncAccountStatusesHandler)
 app.get('/transactions/sync', validateSchema(SyncAccountTransactionsSchema), syncAccountTransactions)
 
 export default app

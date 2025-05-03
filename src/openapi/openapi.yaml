@@ -772,8 +772,37 @@ paths:
                 $ref: '#/components/schemas/ApiError'
   /accounts/transactions/sync:
     get:
-      summary: Get Account Transactions
+      summary: Sync Account Transactions
       operationId: syncAccountTransactions
+      tags:
+        - Accounts API
+
+      security:
+        - APIKey: []
+      parameters:
+        - in: query
+          name: admin_key
+          required: true
+          schema:
+            type: string
+          description: SYNC_ADMIN_KEY
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /accounts/sync:
+    get:
+      summary: Sync Account Statuses
+      operationId: syncAccountStatuses
       tags:
         - Accounts API
 

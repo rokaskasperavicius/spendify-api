@@ -14,11 +14,11 @@ model Accounts {
   balance        Float
   iban           String?
   institution_id String
-  requisitionId  String?
+  status         String?
+  requisitionId  String? // remove ?
   last_synced    DateTime
 
-  // Remove ?
-  institutions Institutions?  @relation(fields: [institution_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  institutions Institutions   @relation(fields: [institution_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
   users        Users[]
   Transactions Transactions[]
 }
