@@ -11,7 +11,6 @@ export const GOCARDLESS_SECRET_ID = process.env.GOCARDLESS_SECRET_ID as string
 export const GOCARDLESS_SECRET_KEY = process.env.GOCARDLESS_SECRET_KEY as string
 export const GOCARDLESS_COUNTRY = process.env.GOCARDLESS_COUNTRY as string
 
-export const GOCARDLESS_ACCESS_VALID_FOR_DAYS = 90
 export const GOCARDLESS_ACCESS_SCOPE = ['balances', 'details', 'transactions']
 
 export const GOCARDLESS_SANDBOX_INSTITUTION_ID = 'SANDBOXFINANCE_SFIN0000'

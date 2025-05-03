@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { GOCARDLESS_ACCESS_SCOPE, GOCARDLESS_ACCESS_VALID_FOR_DAYS } from '@/lib/constants'
+import { GOCARDLESS_ACCESS_SCOPE } from '@/lib/constants'
 import { ServerRequest, ServerResponse } from '@/lib/types'
 
 import { createNordigenAgreement, createNordigenRequisition, getInstitutionById } from '@/services/gocardless/api'
@@ -23,7 +23,7 @@ export const createAccountRequisition = async (req: ServerRequest<Request['body'
     institution_id: institutionId,
     max_historical_days: Number(institution.transaction_total_days),
     access_scope: GOCARDLESS_ACCESS_SCOPE,
-    access_valid_for_days: GOCARDLESS_ACCESS_VALID_FOR_DAYS,
+    access_valid_for_days: Number(1), // institution.max_access_valid_for_days
   })
 
   const { data: requisition } = await createNordigenRequisition({

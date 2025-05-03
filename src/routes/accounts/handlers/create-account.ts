@@ -50,10 +50,14 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     name: details.name,
     iban: details.iban,
     balance: totalBalance,
-    institution_name: institution.name,
-    institution_logo: institution.logo,
     requisitionId: requisitionId,
     last_synced: new Date(),
+  }
+
+  const institutionData = {
+    id: institution.id,
+    name: institution.name,
+    logo: institution.logo,
   }
 
   await prisma.accounts.upsert({
@@ -62,6 +66,15 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     },
     update: {
       ...dataToInsert,
+
+      institutions: {
+        connectOrCreate: {
+          where: {
+            id: institutionData.id,
+          },
+          create: institutionData,
+        },
+      },
 
       users: {
         connect: {
@@ -72,6 +85,15 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     create: {
       id: accountId,
       ...dataToInsert,
+
+      institutions: {
+        connectOrCreate: {
+          create: institutionData,
+          where: {
+            id: institutionData.id,
+          },
+        },
+      },
 
       users: {
         connect: {

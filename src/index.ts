@@ -29,6 +29,10 @@ const port = process.env.PORT || 8080
  * https://crontab.guru/#0_3,15_*_*_*
  */
 schedule.scheduleJob('0 3,15 * * *', async () => {
+  if (NODE_ENV === 'development') {
+    return
+  }
+
   try {
     console.info('[INFO] Running cron job to sync transactions')
 

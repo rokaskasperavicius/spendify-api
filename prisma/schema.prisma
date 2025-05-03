@@ -14,10 +14,13 @@ model Accounts {
   balance          Float
   iban             String?
   institution_name String?
+  institution_id   String?
   institution_logo String?
   requisitionId    String?
   last_synced      DateTime
 
+  // Remove ?
+  institutions Institutions?  @relation(fields: [institution_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
   users        Users[]
   Transactions Transactions[]
 }
@@ -51,5 +54,13 @@ model Users {
   password String
 
   tokens   Sessions[]
+  accounts Accounts[]
+}
+
+model Institutions {
+  id   String  @id
+  name String?
+  logo String?
+
   accounts Accounts[]
 }
