@@ -15,6 +15,7 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
     include: {
       institutions: {
         select: {
+          id: true,
           name: true,
           logo: true,
         },
@@ -31,6 +32,7 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
         iban: account.iban,
         status: account.status,
         balance: gocardlessCurrency(account.balance).format(),
+        institutionId: account.institutions.id,
         institutionName: account.institutions?.name,
         institutionLogo: account.institutions?.logo,
         lastSyncedAt: account.last_synced,

@@ -49,6 +49,7 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
   const dataToInsert = {
     name: details.name,
     iban: details.iban,
+    status: metadata.status,
     balance: totalBalance,
     requisitionId: requisitionId,
     last_synced: new Date(),
