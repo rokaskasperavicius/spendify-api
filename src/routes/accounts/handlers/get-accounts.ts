@@ -12,6 +12,9 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
         },
       },
     },
+    orderBy: {
+      weight: 'desc',
+    },
     include: {
       institutions: {
         select: {
