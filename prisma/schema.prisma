@@ -9,15 +9,13 @@ datasource db {
 }
 
 model Accounts {
-  id               String   @id
-  name             String?
-  balance          Float
-  iban             String?
-  institution_name String?
-  institution_id   String?
-  institution_logo String?
-  requisitionId    String?
-  last_synced      DateTime
+  id             String   @id
+  name           String?
+  balance        Float
+  iban           String?
+  institution_id String
+  requisitionId  String?
+  last_synced    DateTime
 
   // Remove ?
   institutions Institutions?  @relation(fields: [institution_id], references: [id], onDelete: Restrict, onUpdate: Restrict)

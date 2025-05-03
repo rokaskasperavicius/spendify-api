@@ -13,6 +13,14 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
         },
       },
     },
+    include: {
+      institutions: {
+        select: {
+          name: true,
+          logo: true,
+        },
+      },
+    },
   })
 
   // Attach extra account details
@@ -26,8 +34,8 @@ export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
       status: metadata.status,
       balance: gocardlessCurrency(account.balance).format(),
       institutionId: metadata.institution_id,
-      institutionName: account.institution_name,
-      institutionLogo: account.institution_logo,
+      institutionName: account.institutions?.name,
+      institutionLogo: account.institutions?.logo,
       lastSyncedAt: account.last_synced,
     }
   })
