@@ -33,13 +33,7 @@ export const getAccountTransactions = async (
   const account = await prisma.accounts.findFirst({
     where: {
       id: accountId,
-      AND: {
-        users: {
-          some: {
-            id: res.locals.userId,
-          },
-        },
-      },
+      user_id: res.locals.userId,
     },
   })
 

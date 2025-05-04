@@ -6,11 +6,7 @@ import prisma from '@/services/prisma'
 export const getAccounts = async (req: ServerRequest, res: ServerResponse) => {
   const accounts = await prisma.accounts.findMany({
     where: {
-      users: {
-        some: {
-          id: res.locals.userId,
-        },
-      },
+      user_id: res.locals.userId,
     },
     orderBy: {
       weight: 'desc',

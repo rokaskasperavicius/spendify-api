@@ -20,39 +20,12 @@ export const deleteAccount = async (req: ServerRequest<Request['body']>, res: Se
   const { userId } = res.locals
   const { accountId } = req.body
 
-  await prisma.accounts.update({
+  await prisma.accounts.delete({
     where: {
       id: accountId,
-    },
-    data: {
-      users: {
-        disconnect: {
-          id: userId,
-        },
-      },
+      user_id: userId,
     },
   })
-
-  // Get the account to check if there are any users left with that account
-  const account = await prisma.accounts.findMany({
-    include: {
-      users: true,
-    },
-
-    where: {
-      id: accountId,
-    },
-  })
-
-  const userCount = account[0]?.users.length
-
-  if (userCount === 0) {
-    await prisma.accounts.delete({
-      where: {
-        id: accountId,
-      },
-    })
-  }
 
   res.json({
     success: true,

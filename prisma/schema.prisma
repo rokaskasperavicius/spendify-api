@@ -10,6 +10,7 @@ datasource db {
 
 model Accounts {
   id             String   @id
+  user_id        Int?
   name           String?
   balance        Float
   iban           String?
@@ -20,7 +21,7 @@ model Accounts {
   weight         Int      @default(0)
 
   institutions Institutions   @relation(fields: [institution_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  users        Users[]
+  users        Users?         @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
   Transactions Transactions[]
 }
 
@@ -52,7 +53,7 @@ model Users {
   email    String @unique
   password String
 
-  tokens   Sessions[]
+  sessions Sessions[]
   accounts Accounts[]
 }
 

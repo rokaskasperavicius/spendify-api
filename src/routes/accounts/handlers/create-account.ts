@@ -46,63 +46,46 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
 
   const totalBalance = gocardlessCurrency(balances && balances[0]?.balanceAmount.amount).value
 
-  const dataToInsert = {
-    name: details.name,
-    iban: details.iban,
-    status: metadata.status,
-    balance: totalBalance,
-    requisitionId: requisitionId,
-    last_synced: new Date(),
-  }
-
   const institutionData = {
     id: institution.id,
     name: institution.name,
     logo: institution.logo,
   }
 
-  await prisma.accounts.upsert({
-    where: {
-      id: accountId,
-    },
-    update: {
-      ...dataToInsert,
+  await prisma.accounts
+    .create({
+      data: {
+        id: accountId,
+        name: details.name,
+        iban: details.iban,
+        status: metadata.status,
+        balance: totalBalance,
+        requisitionId: requisitionId,
+        last_synced: new Date(),
 
-      institutions: {
-        connectOrCreate: {
-          where: {
-            id: institutionData.id,
+        users: {
+          connect: {
+            id: userId,
           },
-          create: institutionData,
         },
-      },
 
-      users: {
-        connect: {
-          id: userId,
-        },
-      },
-    },
-    create: {
-      id: accountId,
-      ...dataToInsert,
-
-      institutions: {
-        connectOrCreate: {
-          create: institutionData,
-          where: {
-            id: institutionData.id,
+        institutions: {
+          connectOrCreate: {
+            where: {
+              id: institutionData.id,
+            },
+            create: institutionData,
           },
         },
       },
+    })
+    .catch((error) => {
+      if (error?.code === 'P2002') {
+        throw new ServerError(400, ERROR_CODES.DUPLICATE_ACCOUNTS)
+      }
 
-      users: {
-        connect: {
-          id: userId,
-        },
-      },
-    },
-  })
+      throw error
+    })
 
   // Here we sync transactions
   const { data } = await getAccountTransactionsById(accountId)
