@@ -35,6 +35,17 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     throw new ServerError(400, ERROR_CODES.WRONG_ACCOUNT)
   }
 
+  // Check if the account already exists and belongs to the user
+  const existingAccount = await prisma.accounts.findFirst({
+    where: {
+      id: accountId,
+    },
+  })
+
+  if (existingAccount && existingAccount.user_id !== userId) {
+    throw new ServerError(400, ERROR_CODES.DUPLICATE_ACCOUNTS)
+  }
+
   const { data: metadata } = await getAccountMetadata(accountId)
   const {
     data: { account: details },
@@ -53,8 +64,29 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
   }
 
   await prisma.accounts
-    .create({
-      data: {
+    .upsert({
+      where: {
+        id: accountId,
+        user_id: userId,
+      },
+      update: {
+        name: details.name,
+        iban: details.iban,
+        status: metadata.status,
+        balance: totalBalance,
+        requisitionId: requisitionId,
+        last_synced: new Date(),
+
+        institutions: {
+          connectOrCreate: {
+            where: {
+              id: institutionData.id,
+            },
+            create: institutionData,
+          },
+        },
+      },
+      create: {
         id: accountId,
         name: details.name,
         iban: details.iban,
@@ -71,10 +103,10 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
 
         institutions: {
           connectOrCreate: {
+            create: institutionData,
             where: {
               id: institutionData.id,
             },
-            create: institutionData,
           },
         },
       },
