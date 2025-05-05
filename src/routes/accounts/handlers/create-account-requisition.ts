@@ -1,6 +1,7 @@
+import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 
-import { GOCARDLESS_ACCESS_SCOPE } from '@/lib/constants'
+import { GOCARDLESS_ACCESS_SCOPE, JWT_SECRET } from '@/lib/constants'
 import { ServerRequest, ServerResponse } from '@/lib/types'
 
 import { createNordigenAgreement, createNordigenRequisition, getInstitutionById } from '@/services/gocardless/api'
@@ -16,6 +17,7 @@ type Request = z.infer<typeof CreateAccountRequisitionSchema>
 
 export const createAccountRequisition = async (req: ServerRequest<Request['body']>, res: ServerResponse) => {
   const { institutionId, redirect } = req.body
+  const { userId } = res.locals
 
   const { data: institution } = await getInstitutionById(institutionId)
 
@@ -23,11 +25,22 @@ export const createAccountRequisition = async (req: ServerRequest<Request['body'
     institution_id: institutionId,
     max_historical_days: Number(institution.transaction_total_days),
     access_scope: GOCARDLESS_ACCESS_SCOPE,
-    access_valid_for_days: Number(1), // institution.max_access_valid_for_days
+    access_valid_for_days: Number(institution.max_access_valid_for_days),
   })
 
+  const secret = jwt.sign(
+    {
+      userId: userId,
+    },
+    JWT_SECRET,
+    { expiresIn: 60 * 15 }, // 15 minutes
+  )
+
+  const redirectWithSecret = new URL(redirect)
+  redirectWithSecret.searchParams.append('secret', secret)
+
   const { data: requisition } = await createNordigenRequisition({
-    redirect,
+    redirect: redirectWithSecret.toString(),
     institution_id: institutionId,
     agreement: agreement.id,
     account_selection: false,

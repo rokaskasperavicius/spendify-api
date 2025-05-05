@@ -440,6 +440,12 @@ paths:
           schema:
             type: string
           description: The requisition approved by the user
+        - in: query
+          name: secret
+          required: true
+          schema:
+            type: string
+          description: The secret assigned to the user
       responses:
         '200':
           description: Success
@@ -571,6 +577,7 @@ paths:
               required:
                 - accountId
                 - requisitionId
+                - secret
               properties:
                 accountId:
                   type: string
@@ -578,6 +585,9 @@ paths:
                 requisitionId:
                   type: string
                   example: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+                secret:
+                  type: string
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
       responses:
         '200':
           description: Success

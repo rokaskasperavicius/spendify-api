@@ -3,12 +3,9 @@ import { Send } from 'express-serve-static-core'
 
 export enum ERROR_CODES {
   UNKNOWN = 'UNKNOWN',
+  FORBIDDEN = 'FORBIDDEN',
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
   USER_EXISTS = 'USER_EXISTS',
-
-  // This is thrown whenever the account being added to the user
-  // doesn't belong to the assigned requisition
-  WRONG_ACCOUNT = 'WRONG_ACCOUNT',
   DUPLICATE_ACCOUNTS = 'DUPLICATE_ACCOUNTS',
   INVALID_SCHEMA = 'INVALID_SCHEMA',
   UNAUTHORIZED = 'UNAUTHORIZED',

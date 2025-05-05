@@ -1,5 +1,7 @@
+import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 
+import { JWT_SECRET } from '@/lib/constants'
 import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import {
@@ -16,6 +18,7 @@ import prisma from '@/services/prisma'
 
 export const CreateAccountSchema = z.object({
   body: z.object({
+    secret: z.string(),
     accountId: z.string(),
     requisitionId: z.string(),
   }),
@@ -24,15 +27,37 @@ export const CreateAccountSchema = z.object({
 type Request = z.infer<typeof CreateAccountSchema>
 
 export const createAccount = async (req: ServerRequest<Request['body']>, res: ServerResponse) => {
-  const { accountId, requisitionId } = req.body
+  const { secret, accountId, requisitionId } = req.body
   const { userId } = res.locals
+
+  // Check that the secret is valid
+  try {
+    const decoded = jwt.verify(secret, JWT_SECRET) as jwt.JwtPayload
+
+    if (decoded.userId !== userId) {
+      throw new ServerError(403, ERROR_CODES.FORBIDDEN)
+    }
+  } catch {
+    throw new ServerError(403, ERROR_CODES.FORBIDDEN)
+  }
 
   // Check that accountId belongs to the requisitionId
   const { data: accounts } = await getRequisitionById(requisitionId)
   const belongsToRequisition = accounts.accounts?.some((account) => account === accountId)
 
   if (!belongsToRequisition) {
-    throw new ServerError(400, ERROR_CODES.WRONG_ACCOUNT)
+    throw new ServerError(403, ERROR_CODES.FORBIDDEN)
+  }
+
+  // Check that requisitionId belongs to the user
+  const existingRequisition = await prisma.accounts.findFirst({
+    where: {
+      requisitionId: requisitionId,
+    },
+  })
+
+  if (existingRequisition && existingRequisition.user_id !== userId) {
+    throw new ServerError(403, ERROR_CODES.FORBIDDEN)
   }
 
   // Check if the account already exists and belongs to the user
@@ -43,7 +68,7 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
   })
 
   if (existingAccount && existingAccount.user_id !== userId) {
-    throw new ServerError(400, ERROR_CODES.DUPLICATE_ACCOUNTS)
+    throw new ServerError(403, ERROR_CODES.DUPLICATE_ACCOUNTS)
   }
 
   const { data: metadata } = await getAccountMetadata(accountId)

@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
@@ -68,8 +69,8 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     code = error.code || ERROR_CODES.UNKNOWN
   }
 
-  if (error.message) {
-    console.error(error.message)
+  if (isAxiosError(error)) {
+    console.error(error.message, error.response?.data)
   }
 
   res.status(status).json({
