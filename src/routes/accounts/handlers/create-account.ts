@@ -6,7 +6,6 @@ import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/t
 
 import {
   getAccountBalanceById,
-  getAccountDetailsById,
   getAccountMetadata,
   getAccountTransactionsById,
   getInstitutionById,
@@ -42,8 +41,8 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
   }
 
   // Check that accountId belongs to the requisitionId
-  const { data: accounts } = await getRequisitionById(requisitionId)
-  const belongsToRequisition = accounts.accounts?.some((account) => account === accountId)
+  const { data: requisition } = await getRequisitionById(requisitionId)
+  const belongsToRequisition = requisition.accounts?.some((account) => account === accountId)
 
   if (!belongsToRequisition) {
     throw new ServerError(403, ERROR_CODES.FORBIDDEN)
@@ -73,9 +72,6 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
 
   const { data: metadata } = await getAccountMetadata(accountId)
   const {
-    data: { account: details },
-  } = await getAccountDetailsById(accountId)
-  const {
     data: { balances },
   } = await getAccountBalanceById(accountId)
   const { data: institution } = await getInstitutionById(String(metadata.institution_id))
@@ -95,9 +91,9 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
         user_id: userId,
       },
       update: {
-        name: details.name,
-        iban: details.iban,
-        status: metadata.status,
+        name: metadata?.name,
+        iban: metadata?.iban,
+        status: requisition?.status,
         balance: totalBalance,
         requisitionId: requisitionId,
         last_synced: new Date(),
@@ -113,9 +109,9 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
       },
       create: {
         id: accountId,
-        name: details.name,
-        iban: details.iban,
-        status: metadata.status,
+        name: metadata?.name,
+        iban: metadata?.iban,
+        status: requisition?.status,
         balance: totalBalance,
         requisitionId: requisitionId,
         last_synced: new Date(),

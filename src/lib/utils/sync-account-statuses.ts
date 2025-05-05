@@ -1,4 +1,4 @@
-import { getAccountMetadata } from '@/services/gocardless/api'
+import { getRequisitionById } from '@/services/gocardless/api'
 import prisma from '@/services/prisma'
 
 export const syncAccountStatuses = async () => {
@@ -6,7 +6,7 @@ export const syncAccountStatuses = async () => {
 
   for (const account of accounts) {
     try {
-      const { data: metadata } = await getAccountMetadata(account.id)
+      const { data: requisition } = await getRequisitionById(account.requisitionId)
 
       // Update the account status
       await prisma.accounts.update({
@@ -14,7 +14,7 @@ export const syncAccountStatuses = async () => {
           id: account.id,
         },
         data: {
-          status: metadata.status,
+          status: requisition?.status,
         },
       })
     } catch (error) {

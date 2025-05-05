@@ -45,7 +45,7 @@ schedule.scheduleJob('0 3,15 * * *', async () => {
 
 /**
  * Create a cron job to sync account status 10 minutes after the transaction sync
- * This is important as the account might become EXPIRED when syncing transactions
+ * This is important as the account might become expired (EX) when syncing transactions
  */
 schedule.scheduleJob('10 3,15 * * *', async () => {
   if (NODE_ENV === 'development') {

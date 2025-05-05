@@ -870,8 +870,18 @@ components:
     AccountStatuses:
       type: string
       enum:
-        - READY
-        - EXPIRED
+        - CR
+        - ID
+        - LN
+        - RJ
+        - ER
+        - SU
+        - EX
+        - GC
+        - UA
+        - GA
+        - SA
+        
     Categories:
       type: string
       enum:

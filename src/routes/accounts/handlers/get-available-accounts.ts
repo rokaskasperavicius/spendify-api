@@ -6,7 +6,6 @@ import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/t
 
 import {
   getAccountBalanceById,
-  getAccountDetailsById,
   getAccountMetadata,
   getInstitutionById,
   getRequisitionById,
@@ -71,16 +70,13 @@ export const getAvailableAccounts = async (
     const { data: institution } = await getInstitutionById(String(metadata.institution_id))
 
     const {
-      data: { account },
-    } = await getAccountDetailsById(accountId)
-    const {
       data: { balances },
     } = await getAccountBalanceById(accountId)
 
     return {
       accountId,
-      accountName: account.name,
-      accountIban: account.iban,
+      accountName: metadata.name,
+      accountIban: metadata.iban,
       accountBalance: gocardlessCurrency(balances && balances[0]?.balanceAmount.amount).format(),
       institutionLogo: institution.logo,
     }
