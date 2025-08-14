@@ -70,6 +70,8 @@ export const createAccount = async (req: ServerRequest<Request['body']>, res: Se
     throw new ServerError(403, ERROR_CODES.DUPLICATE_ACCOUNTS)
   }
 
+  // TODO: Catch errors from gocardless and check if 429 rate limit is reached
+  // RequisitionID should still be updated in that case, just not the account info.
   const { data: metadata } = await getAccountMetadata(accountId)
   const {
     data: { balances },

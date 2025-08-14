@@ -20,6 +20,7 @@ import { rateLimiterOptions } from './lib/configs/limiter'
 const app = express()
 
 // Security Setup
+app.set('trust proxy', 1) // Rate limiter don't work on Heroku otherwise
 app.disable('x-powered-by')
 app.use(helmet())
 app.use(cors(corsOptions))
@@ -67,10 +68,10 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof ServerError) {
     status = error.status
     code = error.code || ERROR_CODES.UNKNOWN
-  }
-
-  if (isAxiosError(error)) {
-    console.error(error.message, error.response?.data)
+  } else if (isAxiosError(error)) {
+    console.error('Axios error:', error.message, error.response?.data)
+  } else {
+    console.error('Unhandled error:', error)
   }
 
   res.status(status).json({

@@ -6,6 +6,7 @@ import { transformTransactions } from '@/services/gocardless/utils/transform-tra
 import prisma from '@/services/prisma'
 
 export const syncTransactions = async () => {
+  // TODO: Maybe accounts should be filtered on non-expired?
   const accounts = await prisma.accounts.findMany()
 
   for (const account of accounts) {
