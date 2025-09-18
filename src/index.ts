@@ -70,8 +70,8 @@ schedule.scheduleJob('10 3,15 * * *', async () => {
 /**
  * Create a cron job to run google gen ai every 10 minutes to categorize a batch of transactions
  */
-schedule.scheduleJob('*/10 * * * *', async () => {
-  console.log('adasda', GENAI_CATEGORIZATION_ENABLED)
+schedule.scheduleJob('* * * * *', async () => {
+  console.log('adasda', GENAI_CATEGORIZATION_ENABLED, process.env.GENAI_CATEGORIZATION_ENABLED)
   if (!GENAI_CATEGORIZATION_ENABLED) {
     return
   }
