@@ -135,6 +135,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/agreements/enduser/{id}/reconfirm/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieve EUA reconfirmation */
+        get: operations["Retrieve EUA reconfirmation"];
+        put?: never;
+        /** @description Create EUA reconfirmation */
+        post: operations["Create EUA reconfirmation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/institutions/": {
         parameters: {
             query?: never;
@@ -301,6 +319,11 @@ export interface components {
         AccountTransactions: {
             /** @description transactions */
             transactions: components["schemas"]["BankTransaction"];
+            /**
+             * Format: date-time
+             * @description The last time the account transactions were updated
+             */
+            readonly last_updated?: string;
         };
         /** @description AdditionalAccountDataSchema. */
         AdditionalAccountDataSchema: {
@@ -443,6 +466,11 @@ export interface components {
              * @description The date & time at which the end user accepted the agreement.
              */
             readonly accepted?: string | null;
+            /**
+             * @description if this agreement can be extended. Supported by GB banks only.
+             * @default false
+             */
+            reconfirmation: boolean;
         };
         /** @description Represents an end-user agreement. */
         EndUserAgreementRequest: {
@@ -470,6 +498,11 @@ export interface components {
              *     ]
              */
             access_scope: unknown[];
+            /**
+             * @description if this agreement can be extended. Supported by GB banks only.
+             * @default false
+             */
+            reconfirmation: boolean;
         };
         /** @description Represents end-user details. */
         EnduserAcceptanceDetailsRequest: {
@@ -561,6 +594,68 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Requisition"][];
+        };
+        /** @description EUA reconfirmation. */
+        ReconfirmationRetrieve: {
+            /**
+             * Format: uri
+             * @description Reconfirmation URL to be provided to PSU.
+             */
+            readonly reconfirmation_url?: string;
+            /**
+             * Format: date-time
+             * @description Reconfirmation creation time
+             */
+            readonly created?: string;
+            /**
+             * Format: date-time
+             * @description Datetime from when PSU will be able to access reconfirmation URL.
+             */
+            readonly url_valid_from?: string;
+            /**
+             * Format: date-time
+             * @description Datetime until when PSU will be able to access reconfirmation URL.
+             */
+            readonly url_valid_to?: string;
+            /**
+             * redirect_url
+             * Format: uri
+             * @description Optional redirect URL for reconfirmation to override requisition's redirect.
+             */
+            redirect?: string | null;
+            /**
+             * Format: date-time
+             * @description Last time when reconfirmation was accessed (this does not mean that it was accessed by PSU).
+             */
+            readonly last_accessed?: string | null;
+            /**
+             * Format: date-time
+             * @description Last time reconfirmation was submitted (it can be submitted multiple times).
+             */
+            readonly last_submitted?: string | null;
+            /**
+             * @description Dictionary of accounts and their reconfirm and reject timestamps
+             * @example {
+             *       "64a985ae-4427-4a27-bd36-fd625fe6e1fc": {
+             *         "reconfirmed": "2025-01-14T15:20:56.942817Z",
+             *         "rejected": ""
+             *       },
+             *       "cd2fbd71-15f7-4607-bea2-fbd80311a013": {
+             *         "reconfirmed": "",
+             *         "rejected": ""
+             *       }
+             *     }
+             */
+            readonly accounts?: Record<string, never>;
+        };
+        /** @description EUA reconfirmation. */
+        ReconfirmationRetrieveRequest: {
+            /**
+             * redirect_url
+             * Format: uri
+             * @description Optional redirect URL for reconfirmation to override requisition's redirect.
+             */
+            redirect?: string | null;
         };
         /** @description RequisitionSerializer. */
         Requisition: {
@@ -1235,7 +1330,7 @@ export interface operations {
                     "application/json": components["schemas"]["EndUserAgreement"];
                 };
             };
-            /** @description Errors related to 'agreement' field. */
+            /** @description Reconfirmation is not allowed */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1262,7 +1357,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description IP address not whitelisted */
+            /** @description Reconfirmation is not enabled for this company. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1482,6 +1577,148 @@ export interface operations {
             };
             /** @description End User Agreements cannot be accepted more than once */
             405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "Retrieve EUA reconfirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this end user agreement. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reconfirmation details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconfirmationRetrieve"];
+                };
+            };
+            /** @description EUA does not have reconfirmation flag set. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Token is invalid or expired */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Reconfirmation is not enabled for this company. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    "Create EUA reconfirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this end user agreement. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReconfirmationRetrieveRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReconfirmationRetrieveRequest"];
+                "multipart/form-data": components["schemas"]["ReconfirmationRetrieveRequest"];
+            };
+        };
+        responses: {
+            /** @description Reconfirmation created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconfirmationRetrieve"];
+                };
+            };
+            /** @description There are no accounts linked. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Token is invalid or expired */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Reconfirmation is not enabled for this company. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found error */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

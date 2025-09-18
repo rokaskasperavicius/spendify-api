@@ -6,7 +6,6 @@
   "scripts": {
     "start": "ts-node --transpileOnly -r tsconfig-paths/register src/index.ts",
     "dev": "npm run codegen && ts-node-dev --watch src/openapi/openapi.yaml -r tsconfig-paths/register src/index.ts ",
-    "dotenv-pull": "npx dotenv-vault@latest pull",
     "prisma-migrate": "npx prisma migrate dev",
     "codegen": "openapi-typescript https://bankaccountdata.gocardless.com/api/v2/swagger.json -o ./src/services/gocardless/generated.d.ts",
     "eslint": "eslint . --max-warnings 0",
@@ -22,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^1.13.0",
     "@prisma/client": "^6.7.0",
     "@types/express-serve-static-core": "^5.0.6",
     "axios": "^1.9.0",
@@ -30,7 +30,7 @@
     "cors": "^2.8.5",
     "currency.js": "^2.0.4",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
     "fuzzysort": "^3.1.0",

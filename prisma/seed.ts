@@ -7,7 +7,7 @@ import prisma from '@/services/prisma'
 async function main() {
   const hashedPassword = await bcrypt.hash('Test123.', PASSWORD_SALT_ROUNDS)
 
-  const test = await prisma.users.upsert({
+  await prisma.users.upsert({
     where: { email: 'test@gmail.com' },
     update: {},
     create: {
@@ -16,8 +16,6 @@ async function main() {
       password: hashedPassword,
     },
   })
-
-  console.log({ test })
 }
 
 main()
