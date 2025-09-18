@@ -70,13 +70,14 @@ schedule.scheduleJob('10 3,15 * * *', async () => {
 /**
  * Create a cron job to run google gen ai every 10 minutes to categorize a batch of transactions
  */
-schedule.scheduleJob('* * * * *', async () => {
-  console.log('adasda', GENAI_CATEGORIZATION_ENABLED, process.env.GENAI_CATEGORIZATION_ENABLED)
+schedule.scheduleJob('*/10 * * * *', async () => {
   if (!GENAI_CATEGORIZATION_ENABLED) {
     return
   }
 
   try {
+    console.info('[INFO] Running cron job to categorize transactions with Gen AI')
+
     await updateCategorizedTransactions(prismaService, genAiServices)
   } catch (error) {
     console.error('Cron job failed to run gen ai:', error)
