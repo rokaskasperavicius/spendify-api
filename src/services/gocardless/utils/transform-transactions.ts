@@ -56,6 +56,7 @@ export const transformTransactions = (transactions: BookedTransaction[], balance
   // Apply balances
   let currentBalance = balance
 
+  // TODO: API now returns balanceAfterTransaction
   const balanced = categorized.map((transaction, index) => {
     const prev = transactions[index - 1]
 

@@ -332,10 +332,10 @@ export interface components {
         };
         /** @description BalanceAfterTransactionSchema. */
         BalanceAfterTransactionSchema: {
-            /** @description amount */
-            amount: string;
-            /** @description currency */
-            currency?: string;
+            /** @description balanceAmount */
+            balanceAmount: components["schemas"]["TransactionAmountSchema"];
+            /** @description balanceType */
+            balanceType: string;
         };
         /** @description BalanceAmountSchema. */
         BalanceAmountSchema: {
@@ -525,6 +525,7 @@ export interface components {
             /** @default 90 */
             transaction_total_days: string;
             max_access_valid_for_days?: string;
+            max_access_valid_for_days_reconfirmation?: string;
             countries: string[];
             logo: string;
         };
@@ -536,6 +537,7 @@ export interface components {
             /** @default 90 */
             transaction_total_days: string;
             max_access_valid_for_days?: string;
+            max_access_valid_for_days_reconfirmation?: string;
             countries: string[];
             logo: string;
             supported_features: unknown[];
