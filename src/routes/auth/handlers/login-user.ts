@@ -66,7 +66,7 @@ export const loginUser = async (req: ServerRequest<Request['body']>, res: Server
   })
 
   res.cookie('session', sessionToken, {
-    domain: NODE_ENV === 'production' ? 'spendify-cloudpeak.dev' : undefined, // This really needs to be refined
+    domain: NODE_ENV === 'production' ? 'cloudpeak.dev' : undefined, // This really needs to be refined
     path: '/',
     httpOnly: true,
     secure: true,
