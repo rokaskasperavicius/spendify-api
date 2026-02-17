@@ -8,6 +8,7 @@ const corsOptions = {
     'https://spendify-client.vercel.app',
     'https://www.spendify.dk',
     'https://spendify.cloudpeak.dev',
+    'https://cloudpeak-server.cloudflareaccess.com',
   ],
   credentials: true,
   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
