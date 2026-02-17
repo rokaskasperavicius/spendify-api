@@ -7,6 +7,7 @@ const corsOptions = {
     // For production
     'https://spendify-client.vercel.app',
     'https://www.spendify.dk',
+    'https://spendify.cloudpeak.dev',
   ],
   credentials: true,
   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
