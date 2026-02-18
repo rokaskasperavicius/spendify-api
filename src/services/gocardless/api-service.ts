@@ -36,10 +36,11 @@ gocardlessApi.interceptors.response.use(
     if (!config) return null
 
     console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response?.config)}`)
+    console.log(`[ERROR] GoCardless API error2: ${JSON.stringify(error.message)}`)
 
     // 401 - Unauthorized
     if (response?.status === 401) {
-      if (counter >= 2) {
+      if (counter >= 3) {
         console.error(`[ERROR] Failed to refresh GoCardless token after ${counter} attempts`)
         return Promise.reject(error)
       }
