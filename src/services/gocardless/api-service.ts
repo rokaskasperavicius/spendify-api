@@ -27,7 +27,7 @@ let counter = 0
 
 gocardlessApi.interceptors.response.use(
   (response) => {
-    console.log('response ', JSON.stringify(response))
+    console.log('response ', JSON.stringify(response.config))
     return response
   },
 
@@ -35,7 +35,7 @@ gocardlessApi.interceptors.response.use(
     const { response, config } = error
     if (!config) return null
 
-    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response)}`)
+    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response?.config)}`)
 
     // 401 - Unauthorized
     if (response?.status === 401) {
