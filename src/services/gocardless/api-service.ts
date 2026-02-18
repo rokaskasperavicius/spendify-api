@@ -23,6 +23,8 @@ gocardlessApi.interceptors.request.use(
   },
 )
 
+let counter = 0
+
 gocardlessApi.interceptors.response.use(
   (response) => {
     console.log('response ', JSON.stringify(response))
@@ -33,10 +35,17 @@ gocardlessApi.interceptors.response.use(
     const { response, config } = error
     if (!config) return null
 
-    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(error)}`)
+    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response)}`)
 
     // 401 - Unauthorized
     if (response?.status === 401) {
+      if (counter >= 2) {
+        console.error(`[ERROR] Failed to refresh GoCardless token after ${counter} attempts`)
+        return Promise.reject(error)
+      }
+
+      counter++
+
       const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
         secret_id: GOCARDLESS_SECRET_ID,
         secret_key: GOCARDLESS_SECRET_KEY,
