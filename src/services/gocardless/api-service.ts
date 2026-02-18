@@ -13,6 +13,7 @@ gocardlessApi.interceptors.request.use(
   async (config) => {
     const accessToken = gocardlessTokens.accessToken
     config.headers['Authorization'] = `Bearer ${accessToken}`
+    console.log('token', accessToken)
 
     return config
   },
@@ -24,6 +25,7 @@ gocardlessApi.interceptors.request.use(
 
 gocardlessApi.interceptors.response.use(
   (response) => {
+    console.log('response ', JSON.stringify(response))
     return response
   },
 
@@ -31,7 +33,7 @@ gocardlessApi.interceptors.response.use(
     const { response, config } = error
     if (!config) return null
 
-    console.log(`[ERROR] GoCardless API error: ${error}`)
+    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(error)}`)
 
     // 401 - Unauthorized
     if (response?.status === 401) {
