@@ -36,12 +36,18 @@ gocardlessApi.interceptors.response.use(
     if (!config) return null
 
     console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response?.config)}`)
-    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response?.headers)}`)
-    console.log(`[ERROR] GoCardless API error2: ${JSON.stringify(error.message)}`)
+    console.log(`[ERROR] GoCardless API error2: ${JSON.stringify(response?.headers)}`)
+    console.log(`[ERROR] GoCardless API error3: ${JSON.stringify(error.message)}`)
+    console.log(`[ERROR] GoCardless API error4: ${JSON.stringify(error.response)}`)
 
     // 401 - Unauthorized
     if (response?.status === 401) {
-      if (counter >= 3) {
+      if (config.url === '/token/new/') {
+        console.error(`[ERROR] Failed to refresh GoCardless token`)
+        return Promise.reject(error)
+      }
+
+      if (counter >= 2) {
         console.error(`[ERROR] Failed to refresh GoCardless token after ${counter} attempts`)
         return Promise.reject(error)
       }
@@ -52,17 +58,10 @@ gocardlessApi.interceptors.response.use(
         secret_id: GOCARDLESS_SECRET_ID,
         secret_key: GOCARDLESS_SECRET_KEY,
       })
-      // .catch((error) => {
-      //   console.error(`[ERROR] Failed to refresh GoCardless token: ${JSON.stringify(error)}`)
-      //   return { data: { access: '1', refresh: '2' } }
-      // })
-
-      // console.log(data, 'new token', GOCARDLESS_BASE_URL, GOCARDLESS_SECRET_ID, GOCARDLESS_SECRET_KEY)
 
       gocardlessTokens.setAccessToken(data.access)
       gocardlessTokens.setRefreshToken(data.refresh)
 
-      // return Promise.reject(error)
       return gocardlessApi(config)
     }
 
