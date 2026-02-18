@@ -25,7 +25,7 @@ export const createAccountRequisition = async (req: ServerRequest<Request['body'
     institution_id: institutionId,
     max_historical_days: Number(institution.transaction_total_days),
     access_scope: GOCARDLESS_ACCESS_SCOPE,
-    access_valid_for_days: 1, // Number(institution.max_access_valid_for_days),
+    access_valid_for_days: Number(institution.max_access_valid_for_days),
     reconfirmation: false,
   })
 
