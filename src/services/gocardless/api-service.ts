@@ -11,7 +11,18 @@ const gocardlessApi = axios.create({
 
 gocardlessApi.interceptors.request.use(
   async (config) => {
-    const accessToken = gocardlessTokens.accessToken
+    let accessToken = gocardlessTokens.accessToken
+
+    if (!accessToken) {
+      const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
+        secret_id: GOCARDLESS_SECRET_ID,
+        secret_key: GOCARDLESS_SECRET_KEY,
+      })
+
+      accessToken = data.access
+      gocardlessTokens.setAccessToken(data.access)
+    }
+
     config.headers['Authorization'] = `Bearer ${accessToken}`
     console.log('token', accessToken)
 
@@ -53,13 +64,12 @@ gocardlessApi.interceptors.response.use(
 
       counter++
 
-      const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
-        secret_id: GOCARDLESS_SECRET_ID,
-        secret_key: GOCARDLESS_SECRET_KEY,
-      })
+      // const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
+      //   secret_id: GOCARDLESS_SECRET_ID,
+      //   secret_key: GOCARDLESS_SECRET_KEY,
+      // })
 
-      gocardlessTokens.setAccessToken(data.access)
-      gocardlessTokens.setRefreshToken(data.refresh)
+      gocardlessTokens.setAccessToken(undefined)
 
       return gocardlessApi(config)
     }
