@@ -795,6 +795,12 @@ paths:
           schema:
             type: string
           description: SYNC_ADMIN_KEY
+        - in: query
+          name: account_id
+          required: false
+          schema:
+            type: string
+          description: Account ID to sync (optional)
       responses:
         '200':
           description: Success

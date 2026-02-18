@@ -5,9 +5,21 @@ import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
 import { transformTransactions } from '@/services/gocardless/utils/transform-transactions'
 import prisma from '@/services/prisma'
 
-export const syncTransactions = async () => {
-  // TODO: Maybe accounts should be filtered on non-expired?
-  const accounts = await prisma.accounts.findMany()
+export const syncTransactions = async (accountId?: string) => {
+  let accounts = []
+
+  if (accountId) {
+    const account = await prisma.accounts.findUniqueOrThrow({
+      where: {
+        id: accountId,
+      },
+    })
+
+    accounts = [account]
+  } else {
+    // TODO: Maybe accounts should be filtered on non-expired?
+    accounts = await prisma.accounts.findMany()
+  }
 
   for (const account of accounts) {
     try {
