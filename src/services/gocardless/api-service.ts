@@ -48,7 +48,7 @@ gocardlessApi.interceptors.response.use(
 
     console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response?.config)}`)
     console.log(`[ERROR] GoCardless API error2: ${JSON.stringify(response?.headers)}`)
-    console.log(`[ERROR] GoCardless API error3: ${JSON.stringify(error.message)}`)
+    console.log(`[ERROR] GoCardless API error3: ${JSON.stringify(error.toJSON())}`)
 
     // 401 - Unauthorized
     if (response?.status === 401) {
