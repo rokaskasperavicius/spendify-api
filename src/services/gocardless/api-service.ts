@@ -37,23 +37,22 @@ gocardlessApi.interceptors.response.use(
 
     // 401 - Unauthorized
     if (response?.status === 401) {
-      const { data } = await axios
-        .post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
-          secret_id: GOCARDLESS_SECRET_ID,
-          secret_key: GOCARDLESS_SECRET_KEY,
-        })
-        .catch((error) => {
-          console.error(`[ERROR] Failed to refresh GoCardless token: ${JSON.stringify(error)}`)
-          return { data: { access: '1', refresh: '2' } }
-        })
+      const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
+        secret_id: GOCARDLESS_SECRET_ID,
+        secret_key: GOCARDLESS_SECRET_KEY,
+      })
+      // .catch((error) => {
+      //   console.error(`[ERROR] Failed to refresh GoCardless token: ${JSON.stringify(error)}`)
+      //   return { data: { access: '1', refresh: '2' } }
+      // })
 
-      console.log(data, 'new token', GOCARDLESS_BASE_URL, GOCARDLESS_SECRET_ID, GOCARDLESS_SECRET_KEY)
+      // console.log(data, 'new token', GOCARDLESS_BASE_URL, GOCARDLESS_SECRET_ID, GOCARDLESS_SECRET_KEY)
 
       gocardlessTokens.setAccessToken(data.access)
       gocardlessTokens.setRefreshToken(data.refresh)
 
-      return Promise.reject(error)
-      // return gocardlessApi(config)
+      // return Promise.reject(error)
+      return gocardlessApi(config)
     }
 
     return Promise.reject(error)
