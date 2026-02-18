@@ -24,7 +24,7 @@ gocardlessApi.interceptors.request.use(
     }
 
     config.headers['Authorization'] = `Bearer ${accessToken}`
-    console.log('token', accessToken)
+    config.headers['Api-Retry-Count'] = 0
 
     return config
   },
@@ -51,6 +51,15 @@ gocardlessApi.interceptors.response.use(
 
     // 401 - Unauthorized
     if (response?.status === 401) {
+      const retryCount = Number(config.headers['Api-Retry-Count'] || 0)
+
+      if (retryCount > 0) {
+        console.error('[ERROR] Detected 401 error after refreshing token, not retrying again.')
+        return Promise.reject(error)
+      }
+
+      config.headers['Api-Retry-Count'] = 1
+
       if (counter >= 2) {
         console.error(`[ERROR] Failed to refresh GoCardless token after ${counter} attempts`)
         return Promise.reject(error)
