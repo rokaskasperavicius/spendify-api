@@ -31,6 +31,8 @@ gocardlessApi.interceptors.response.use(
     const { response, config } = error
     if (!config) return null
 
+    console.log(`[ERROR] GoCardless API error: ${error}`)
+
     // 401 - Unauthorized
     if (response?.status === 401) {
       const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
