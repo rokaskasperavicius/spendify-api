@@ -18,7 +18,7 @@ export const syncAccountStatuses = async () => {
         },
       })
     } catch (error) {
-      console.error(`Error syncing transactions for account ${account.id} with error: ${error}`)
+      console.error(`Error syncing statuses for account ${account.id} with error: ${error}`)
     }
   }
 }

@@ -28,12 +28,12 @@ if (NODE_ENV === 'development' && MOCKS_ENABLED === 'true') {
 const port = process.env.PORT || 8080
 
 /**
- * Create a cron job to sync transactions every day at 3am and 15pm UTC
+ * Create a cron job to sync transactions every day at 10 past 3am and 15pm UTC
  *
  * You can check how the cron job parser works here:
  * https://crontab.guru/#0_3,15_*_*_*
  */
-schedule.scheduleJob('0 3,15 * * *', async () => {
+schedule.scheduleJob('10 3,15 * * *', async () => {
   // TODO: Add env to control this. False by default
   if (NODE_ENV === 'development') {
     return
@@ -49,7 +49,7 @@ schedule.scheduleJob('0 3,15 * * *', async () => {
 })
 
 /**
- * Create a cron job to sync account status 10 minutes after the transaction sync
+ * Create a cron job to sync account status 10 minutes before the transaction sync
  * This is important as the account might become expired (EX) when syncing transactions
  */
 schedule.scheduleJob('10 3,15 * * *', async () => {
