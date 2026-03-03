@@ -20,10 +20,10 @@ import { rateLimiterOptions } from './lib/configs/limiter'
 const app = express()
 
 // Security Setup
-app.set('trust proxy', 1) // Rate limiter don't work on Heroku otherwise
-app.disable('x-powered-by')
-app.use(helmet())
-app.use(cors(corsOptions))
+// app.set('trust proxy', 1) // Rate limiter don't work on Heroku otherwise
+// app.disable('x-powered-by')
+// app.use(helmet())
+// app.use(cors(corsOptions))
 app.use(rateLimiterOptions)
 
 // Parsing
