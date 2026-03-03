@@ -5,6 +5,7 @@ const corsOptions = {
     'http://localhost:3000',
 
     // For production
+    '192.168.1.4',
     'https://spendify-client.vercel.app',
     'https://www.spendify.dk',
     'https://spendify.cloudpeak.dev',
