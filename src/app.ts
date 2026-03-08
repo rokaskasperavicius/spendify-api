@@ -1,6 +1,5 @@
 import { isAxiosError } from 'axios'
 import cookieParser from 'cookie-parser'
-import cors from 'cors'
 import 'dotenv/config'
 import express, { NextFunction, Request, Response } from 'express'
 import helmet from 'helmet'
@@ -13,17 +12,13 @@ import { ERROR_CODES, ServerError } from '@/lib/types'
 
 import apiRoutes from '@/routes'
 
-import { corsOptions } from './lib/configs/cors'
 import { rateLimiterOptions } from './lib/configs/limiter'
 
 // Create the express app
 const app = express()
 
 // Security Setup
-// app.set('trust proxy', 1) // Rate limiter don't work on Heroku otherwise
-// app.disable('x-powered-by')
-// app.use(helmet())
-// app.use(cors(corsOptions))
+app.use(helmet())
 app.use(rateLimiterOptions)
 
 // Parsing
