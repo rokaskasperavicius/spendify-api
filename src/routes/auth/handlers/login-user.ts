@@ -5,7 +5,6 @@ import crypto from 'node:crypto'
 import requestIp from 'request-ip'
 import { z } from 'zod'
 
-import { NODE_ENV } from '@/lib/constants'
 import { ERROR_CODES, ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import prisma from '@/services/prisma'
@@ -66,12 +65,9 @@ export const loginUser = async (req: ServerRequest<Request['body']>, res: Server
   })
 
   res.cookie('session', sessionToken, {
-    domain: NODE_ENV === 'production' ? 'cloudpeak.dev' : undefined, // This really needs to be refined
-    path: '/',
     httpOnly: true,
     secure: true,
     signed: true,
-    sameSite: 'strict',
     expires: expiresAt,
   })
 
