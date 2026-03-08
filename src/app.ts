@@ -52,7 +52,7 @@ app.use('/openapi.yaml', (req, res) => {
   res.sendFile('./openapi/openapi.yaml', { root: __dirname })
 })
 
-app.use('/v1', apiRoutes)
+app.use('/api/v1', apiRoutes)
 
 // custom 404
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
