@@ -19,6 +19,9 @@ import { rateLimiterOptions } from './lib/configs/limiter'
 // Create the express app
 const app = express()
 
+// To avoid ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+app.set('trust proxy', 1 /* number of proxies between user and server */)
+
 // Security Setup
 app.use(helmet())
 app.use(cors(corsOptions))

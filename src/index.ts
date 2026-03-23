@@ -67,17 +67,10 @@ schedule.scheduleJob('0 3,15 * * *', async () => {
   }
 })
 
-schedule.scheduleJob('* * * * *', async function (this: Job) {
-  console.info('[INFO] TEST CRON')
-
-  this.reschedule('*/2 * * * *')
-})
-
-let genAiCronJob = '*/10 * * * *'
 /**
  * Create a cron job to run google gen AI every 10 minutes to categorize a batch of transactions
  */
-schedule.scheduleJob(genAiCronJob, async () => {
+schedule.scheduleJob('*/10 * * * *', async function (this: Job) {
   if (!GENAI_CATEGORIZATION_ENABLED) {
     return
   }
@@ -87,11 +80,10 @@ schedule.scheduleJob(genAiCronJob, async () => {
 
     const left = await updateCategorizedTransactions(prismaService, genAiServices)
 
-    // Scale down
     if (left === 0) {
-      genAiCronJob = '0 * * * *'
+      this.reschedule('0 * * * *') // scale down to every hour
     } else {
-      genAiCronJob = '*/10 * * * *'
+      this.reschedule('*/10 * * * *') // back to normal
     }
   } catch (error) {
     console.error('Cron job failed to run gen ai:', error)
