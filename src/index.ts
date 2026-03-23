@@ -52,7 +52,7 @@ schedule.scheduleJob('10 3,15 * * *', async () => {
  * Create a cron job to sync account status 10 minutes before the transaction sync
  * This is important as the account might become expired (EX) when syncing transactions
  */
-schedule.scheduleJob('10 3,15 * * *', async () => {
+schedule.scheduleJob('0 3,15 * * *', async () => {
   // TODO: Add env to control this. False by default
   if (NODE_ENV === 'development') {
     return
@@ -67,10 +67,11 @@ schedule.scheduleJob('10 3,15 * * *', async () => {
   }
 })
 
+let genaiCronJob = '*/10 * * * *'
 /**
- * Create a cron job to run google gen ai every 10 minutes to categorize a batch of transactions
+ * Create a cron job to run google gen AI every 10 minutes to categorize a batch of transactions
  */
-schedule.scheduleJob('*/10 * * * *', async () => {
+schedule.scheduleJob(genaiCronJob, async () => {
   if (!GENAI_CATEGORIZATION_ENABLED) {
     return
   }
@@ -78,7 +79,14 @@ schedule.scheduleJob('*/10 * * * *', async () => {
   try {
     console.info('[INFO] Running cron job to categorize transactions with Gen AI')
 
-    await updateCategorizedTransactions(prismaService, genAiServices)
+    const left = await updateCategorizedTransactions(prismaService, genAiServices)
+
+    // Scale down
+    if (left === 0) {
+      genaiCronJob = '0 * * * *'
+    } else {
+      genaiCronJob = '*/10 * * * *'
+    }
   } catch (error) {
     console.error('Cron job failed to run gen ai:', error)
   }

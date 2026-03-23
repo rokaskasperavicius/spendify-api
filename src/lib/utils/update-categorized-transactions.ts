@@ -6,7 +6,7 @@ const updateCategorizedTransactions = async (prismaService: IPrismaService, genA
   const batch = await prismaService.findTransactionBatches(20) // default 100
 
   if (batch.length === 0) {
-    return
+    return 0
   }
 
   // Set the batch status to processing
