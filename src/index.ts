@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { setupServer } from 'msw/node'
-import schedule from 'node-schedule'
+import schedule, { Job } from 'node-schedule'
 
 import { GENAI_CATEGORIZATION_ENABLED, MOCKS_ENABLED, NODE_ENV } from '@/lib/constants'
 
@@ -67,11 +67,17 @@ schedule.scheduleJob('0 3,15 * * *', async () => {
   }
 })
 
-let genaiCronJob = '*/10 * * * *'
+schedule.scheduleJob('* * * * *', async function (this: Job) {
+  console.info('[INFO] TEST CRON')
+
+  this.reschedule('*/2 * * * *')
+})
+
+let genAiCronJob = '*/10 * * * *'
 /**
  * Create a cron job to run google gen AI every 10 minutes to categorize a batch of transactions
  */
-schedule.scheduleJob(genaiCronJob, async () => {
+schedule.scheduleJob(genAiCronJob, async () => {
   if (!GENAI_CATEGORIZATION_ENABLED) {
     return
   }
@@ -83,9 +89,9 @@ schedule.scheduleJob(genaiCronJob, async () => {
 
     // Scale down
     if (left === 0) {
-      genaiCronJob = '0 * * * *'
+      genAiCronJob = '0 * * * *'
     } else {
-      genaiCronJob = '*/10 * * * *'
+      genAiCronJob = '*/10 * * * *'
     }
   } catch (error) {
     console.error('Cron job failed to run gen ai:', error)
