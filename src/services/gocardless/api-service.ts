@@ -1,9 +1,13 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 
 import { GOCARDLESS_BASE_URL, GOCARDLESS_SECRET_ID, GOCARDLESS_SECRET_KEY } from '@/lib/constants'
 
 import { NewToken } from './types'
-import gocardlessTokens from './utils/tokens'
+
+interface RetryableRequest extends InternalAxiosRequestConfig {
+  _retry?: boolean
+}
+let accessToken: string | undefined = undefined
 
 const gocardlessApi = axios.create({
   baseURL: GOCARDLESS_BASE_URL,
@@ -11,20 +15,9 @@ const gocardlessApi = axios.create({
 
 gocardlessApi.interceptors.request.use(
   async (config) => {
-    let accessToken = gocardlessTokens.accessToken
-
-    if (!accessToken) {
-      const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
-        secret_id: GOCARDLESS_SECRET_ID,
-        secret_key: GOCARDLESS_SECRET_KEY,
-      })
-
-      accessToken = data.access
-      gocardlessTokens.setAccessToken(data.access)
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`
     }
-
-    config.headers['Authorization'] = `Bearer ${accessToken}`
-    config.headers['Api-Retry-Count'] = 0
 
     return config
   },
@@ -34,8 +27,6 @@ gocardlessApi.interceptors.request.use(
   },
 )
 
-let counter = 0
-
 gocardlessApi.interceptors.response.use(
   (response) => {
     return response
@@ -43,38 +34,29 @@ gocardlessApi.interceptors.response.use(
 
   async (error: AxiosError) => {
     const { response, config } = error
-    if (!config) return null
+    const originalRequest = config as RetryableRequest
 
-    console.log(`[ERROR] GoCardless API error: ${JSON.stringify(response?.config)}`)
-    console.log(`[ERROR] GoCardless API error2: ${JSON.stringify(response?.headers)}`)
-    console.log(`[ERROR] GoCardless API error3: ${JSON.stringify(error.toJSON())}`)
+    if (!config || originalRequest._retry) {
+      return Promise.reject(error)
+    }
 
     // 401 - Unauthorized
     if (response?.status === 401) {
-      const retryCount = Number(config.headers['Api-Retry-Count'] || 0)
+      originalRequest._retry = true
 
-      if (retryCount > 0) {
-        console.error('[ERROR] Detected 401 error after refreshing token, not retrying again.')
-        return Promise.reject(error)
+      try {
+        const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
+          secret_id: GOCARDLESS_SECRET_ID,
+          secret_key: GOCARDLESS_SECRET_KEY,
+        })
+
+        accessToken = data.access
+
+        return gocardlessApi(config)
+      } catch (tokenRefreshError) {
+        accessToken = undefined
+        return Promise.reject(tokenRefreshError)
       }
-
-      config.headers['Api-Retry-Count'] = 1
-
-      if (counter >= 2) {
-        console.error(`[ERROR] Failed to refresh GoCardless token after ${counter} attempts`)
-        return Promise.reject(error)
-      }
-
-      counter++
-
-      // const { data } = await axios.post<NewToken>(`${GOCARDLESS_BASE_URL}/token/new/`, {
-      //   secret_id: GOCARDLESS_SECRET_ID,
-      //   secret_key: GOCARDLESS_SECRET_KEY,
-      // })
-
-      gocardlessTokens.setAccessToken(undefined)
-
-      return gocardlessApi(config)
     }
 
     return Promise.reject(error)

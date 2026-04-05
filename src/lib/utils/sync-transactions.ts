@@ -1,25 +1,19 @@
 import { formatISO, subDays } from 'date-fns'
 
+import { REQUISITION_STATUS } from '@/lib/constants'
+
 import { getAccountBalanceById, getAccountTransactionsById } from '@/services/gocardless/api'
 import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
 import { transformTransactions } from '@/services/gocardless/utils/transform-transactions'
 import prisma from '@/services/prisma'
 
 export const syncTransactions = async (accountId?: string) => {
-  let accounts = []
-
-  if (accountId) {
-    const account = await prisma.accounts.findUniqueOrThrow({
-      where: {
-        id: accountId,
-      },
-    })
-
-    accounts = [account]
-  } else {
-    // TODO: Maybe accounts should be filtered on non-expired?
-    accounts = await prisma.accounts.findMany()
-  }
+  const accounts = await prisma.accounts.findMany({
+    where: {
+      ...(accountId ? { id: accountId } : {}),
+      status: REQUISITION_STATUS.LINKED,
+    },
+  })
 
   for (const account of accounts) {
     try {

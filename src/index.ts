@@ -1,17 +1,12 @@
 import 'dotenv/config'
 import { setupServer } from 'msw/node'
-import schedule, { Job } from 'node-schedule'
 
-import { GENAI_CATEGORIZATION_ENABLED, MOCKS_ENABLED, NODE_ENV } from '@/lib/constants'
+import { MOCKS_ENABLED, NODE_ENV } from '@/lib/constants'
+import { scheduleJobs } from '@/lib/jobs'
 
 import { handlers } from '@/mocks/handlers'
 
 import app from './app'
-import { syncAccountStatuses } from './lib/utils/sync-account-statuses'
-import { syncTransactions } from './lib/utils/sync-transactions'
-import { updateCategorizedTransactions } from './lib/utils/update-categorized-transactions'
-import { genAiServices } from './services/genai'
-import { prismaService } from './services/prisma'
 
 // MSW setup
 const server = setupServer(...handlers)
@@ -27,68 +22,7 @@ if (NODE_ENV === 'development' && MOCKS_ENABLED === 'true') {
 
 const port = process.env.PORT || 8080
 
-/**
- * Create a cron job to sync transactions every day at 10 past 3am and 15pm UTC
- *
- * You can check how the cron job parser works here:
- * https://crontab.guru/#0_3,15_*_*_*
- */
-schedule.scheduleJob('10 3,15 * * *', async () => {
-  // TODO: Add env to control this. False by default
-  if (NODE_ENV === 'development') {
-    return
-  }
-
-  try {
-    console.info('[INFO] Running cron job to sync transactions')
-
-    await syncTransactions()
-  } catch (error) {
-    console.error('Cron job failed to sync transactions with error:', error)
-  }
-})
-
-/**
- * Create a cron job to sync account status 10 minutes before the transaction sync
- * This is important as the account might become expired (EX) when syncing transactions
- */
-schedule.scheduleJob('0 3,15 * * *', async () => {
-  // TODO: Add env to control this. False by default
-  if (NODE_ENV === 'development') {
-    return
-  }
-
-  try {
-    console.info('[INFO] Running cron job to sync account statuses')
-
-    await syncAccountStatuses()
-  } catch (error) {
-    console.error('Cron job failed to sync account statuses with error:', error)
-  }
-})
-
-/**
- * Create a cron job to run google gen AI every 10 minutes to categorize a batch of transactions
- */
-schedule.scheduleJob('*/10 * * * *', async function (this: Job) {
-  if (!GENAI_CATEGORIZATION_ENABLED) {
-    return
-  }
-
-  try {
-    console.info('[INFO] Running cron job to categorize transactions with Gen AI')
-
-    const left = await updateCategorizedTransactions(prismaService, genAiServices)
-
-    if (left === 0) {
-      this.reschedule('0 * * * *') // scale down to every hour
-    } else {
-      this.reschedule('*/10 * * * *') // back to normal
-    }
-  } catch (error) {
-    console.error('Cron job failed to run gen ai:', error)
-  }
-})
+scheduleJobs()
 
 app.listen(port, () => {
   console.log(`⚡️ [SERVER]: Server is running at http://localhost:${port}`)
