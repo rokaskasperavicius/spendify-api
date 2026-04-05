@@ -3,6 +3,7 @@ import fuzzysort from 'fuzzysort'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 
+import { TRANSACTION_CATEGORIES_AI } from '@/lib/constants'
 import { ServerError, ServerRequest, ServerResponse } from '@/lib/types'
 
 import { gocardlessCurrency } from '@/services/gocardless/utils/currency'
@@ -15,7 +16,7 @@ export const GetAccountTransactionsSchema = z.object({
 
   query: z.object({
     search: z.string().optional(),
-    category: z.enum(['Food & Groceries', 'Utilities', 'Transfers']).optional(),
+    category: z.enum([...TRANSACTION_CATEGORIES_AI] as [string, ...string[]]).optional(),
     from: z.string().datetime().optional(),
     to: z.string().datetime().optional(),
   }),
@@ -75,7 +76,7 @@ export const getAccountTransactions = async (
     return transactionDate <= endDate
   })
 
-  transactions = transactions.filter((transaction) => !category || transaction.category === category)
+  transactions = transactions.filter((transaction) => !category || transaction.category_ai === category)
 
   // sort by weight in descending order
   transactions.sort((result, next) => result.weight - next.weight)
@@ -90,7 +91,7 @@ export const getAccountTransactions = async (
       totalAmount: gocardlessCurrency(transaction.total_amount).format(),
       amountInt: transaction.amount,
       totalAmountInt: transaction.total_amount,
-      category: transaction.category,
+      category: transaction.category_ai,
       date: transaction.date,
     })),
   })

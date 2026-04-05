@@ -892,8 +892,12 @@ components:
       type: string
       enum:
         - Food & Groceries
-        - Utilities
+        - Shopping
         - Transfers
+        - Income
+        - Utilities
+        - Transportation
+        - Other
   securitySchemes:
     APIKey:
       type: apiKey
